@@ -160,6 +160,13 @@ def main():
     rclpy.init(args=None)
     node = Node('dummy')
 
+    get_coords = node.create_client(GetCoords, "/get_coords")
+    while not get_coords.wait_for_service(timeout_sec=1.0):
+        node.get_logger().info('Waiting for get_coords')
+
+    coords = do_get_coords(node, get_coords)
+    #stack_blocks(node, set_tool, home, set_gripper, 3, coords)
+
     get_tool = node.create_client(GetTool, "/get_tool")
     while not get_tool.wait_for_service(timeout_sec=1.0):
         node.get_logger().info('Waiting for get_tool')
@@ -188,12 +195,7 @@ def main():
     while not home.wait_for_service(timeout_sec=1.0):
         node.get_logger().info('Waiting for home')
 
-    get_coords = node.create_client(GetCoords, "/get_coords")
-    while not get_coords.wait_for_service(timeout_sec=1.0):
-        node.get_logger().info('Waiting for get_coords')
-
-    coords = do_get_coords(node, get_coords)
-    #stack_blocks(node, set_tool, home, set_gripper, 3, coords)
+    
 
 
 if __name__ == '__main__':

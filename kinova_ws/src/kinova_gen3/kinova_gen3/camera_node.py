@@ -32,7 +32,7 @@ class CameraNode(Node):
         self.get_logger().info('Processing image for coordinates...')
         
         # Run inference
-        result = CLIENT.infer("test_image_2.jpg", model_id="cube-color-gzmh4/14")
+        result = CLIENT.infer("test_image_4.jpg", model_id="cube-color-gzmh4/14")
         preds = result['predictions']
         
         # Find blue square for calibration
