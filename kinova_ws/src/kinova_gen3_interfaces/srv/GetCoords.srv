@@ -1,0 +1,5 @@
+# srv/GetCoords.srv
+---
+float64[] x_coords
+float64[] y_coords
+string[] class_names
