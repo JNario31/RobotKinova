@@ -28,12 +28,12 @@ class CameraNode(Node):
         self.class_names = []
     
     def _handle_get_coords(self, request, response):
-        """Process image and return detected coordinates"""
-        self.get_logger().info('Processing image for coordinates...')
+        # """Process image and return detected coordinates"""
+        # self.get_logger().info('Processing image for coordinates...')
         
-        # Run inference
-        result = CLIENT.infer("test_image_4.jpg", model_id="cube-color-gzmh4/14")
-        preds = result['predictions']
+        # # Run inference
+        # result = CLIENT.infer("test_image_4.jpg", model_id="cube-color-gzmh4/14")
+        # preds = result['predictions']
         
         # # Find blue square for calibration
         # blue_square_xp, blue_square_yp = None, None
