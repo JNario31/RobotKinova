@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from inference_sdk import InferenceHTTPClient
 from kinova_gen3_interfaces.srv import GetCoords
-from matrix_utils import compute_transformation, apply_transformation
+from kinova_gen3.matrix_utils import compute_transformation, apply_transformation
 
 # --- CONSTANTS --- 
 BLUE_SQUARE_XW = 0.075
