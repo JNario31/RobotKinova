@@ -146,8 +146,8 @@ def stack_blocks(node, set_tool, home, set_gripper, coords):
         time.sleep(1.5)
 
         for i in range(n_blocks):
-            x = -coords[i][0]
-            y = coords[i][1]
+            x = -coords[i][1]
+            y = coords[i][0]
             pick_block(node, set_tool, set_gripper, 
                     coords[i][1], coords[i][0], pickup_z, 
                     approach_height=approach_height)
