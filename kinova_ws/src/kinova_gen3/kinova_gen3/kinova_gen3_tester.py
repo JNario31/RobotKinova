@@ -78,10 +78,10 @@ def do_get_coords(node, get_coords):
 def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
 
     # Convert from cm to m for API
-    x = x / 100.0
-    y = y / 100.0
-    z = z / 100.0
-    approach_height = approach_height / 100.0
+    x = x 
+    y = y 
+    z = z 
+    approach_height = approach_height
 
     # Open gripper
     do_set_gripper(node, set_gripper, 0.0)  # Open gripper
@@ -134,13 +134,13 @@ def place_block(node, set_tool, set_gripper, x, y, z, approach_height=15.0):
 def stack_blocks(node, set_tool, home, set_gripper, coords):
 
         # Pickup location configuration
-        pickup_z = 10
+        pickup_z = 0.1
         n_blocks = 3
 
         # Block height
 
         #Approach height
-        approach_height = 15.0
+        approach_height = 0.15
 
         do_home(node, home)
         time.sleep(1.5)
