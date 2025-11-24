@@ -5,7 +5,7 @@ import numpy as np
 from inference_sdk import InferenceHTTPClient
 from kinova_gen3_interfaces.srv import GetCoords
 from kinova_gen3.matrix_utils import compute_transformation, apply_transformation
-
+import os
 
 
 # --- CONSTANTS --- 
@@ -21,6 +21,9 @@ class CameraNode(Node):
     def __init__(self):
         super().__init__('camera_node')
         self.get_logger().info('Camera node created')
+
+        current_file_dir = os.path.dirname(os.path.abspath(__file__))
+        self.image_path = os.path.join(current_file_dir, "undistorted_image.jpg")
         
         # Create service that provides coordinates
         self.create_service(GetCoords, "get_coords", self._handle_get_coords)
@@ -35,11 +38,6 @@ class CameraNode(Node):
         self.get_logger().info('Processing image for coordinates...')
         
         # Debug: Print current working directory
-        import os
-        self.get_logger().info(f'Current working directory: {os.getcwd()}')
-        self.get_logger().info(f'Looking for image at: {os.path.abspath("undistorted_image.jpg")}')
-        self.get_logger().info(f'Image exists: {os.path.exists("undistorted_image.jpg")}
-
         # Run inference
         result = CLIENT.infer("undistorted_image.jpg", model_id="cube-color-gzmh4/14")
         preds = result['predictions']
