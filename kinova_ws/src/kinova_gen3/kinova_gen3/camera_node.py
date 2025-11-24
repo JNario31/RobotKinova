@@ -26,7 +26,6 @@ class CameraNode(Node):
         # Store latest coordinates
         self.coords = []
         self.class_names = []
-        self.n_blocks = 0
         
     
     def _handle_get_coords(self, request, response):
@@ -81,7 +80,6 @@ class CameraNode(Node):
         response.x_coords = [0.1, 0.2, 0.3]
         response.y_coords = [0.15, 0.25, 0.35]
         response.class_names = ['red', 'blue', 'green']
-        response.n_blocks = 3
         
         return response
 
