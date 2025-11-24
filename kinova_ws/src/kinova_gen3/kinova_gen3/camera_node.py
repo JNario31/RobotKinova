@@ -22,9 +22,7 @@ class CameraNode(Node):
         super().__init__('camera_node')
         self.get_logger().info('Camera node created')
 
-        current_file_dir = os.path.dirname(os.path.abspath(__file__))
-        self.image_path = os.path.join(current_file_dir, "undistorted_image.jpg")
-        
+        self.image_path = "/home/johnn31/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/undistorted_image.jpg"
         # Create service that provides coordinates
         self.create_service(GetCoords, "get_coords", self._handle_get_coords)
         
@@ -39,7 +37,7 @@ class CameraNode(Node):
         
         # Debug: Print current working directory
         # Run inference
-        result = CLIENT.infer("undistorted_image.jpg", model_id="cube-color-gzmh4/14")
+        result = CLIENT.infer(self.image_path, model_id="cube-color-gzmh4/14")
         preds = result['predictions']
         
         # Find blue square for calibration
