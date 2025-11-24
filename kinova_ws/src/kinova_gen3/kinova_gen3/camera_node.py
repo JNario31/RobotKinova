@@ -68,7 +68,7 @@ class CameraNode(Node):
         ]
         
         # Measure your actual blue square and put the dimensions here!
-        BLUE_SQUARE_SIZE = 0.05  # TODO: MEASURE THIS IN METERS!
+        BLUE_SQUARE_SIZE = 0.045  # TODO: MEASURE THIS IN METERS!
         
         # Corresponding world coordinates (assuming square is axis-aligned)
         world_points = [
