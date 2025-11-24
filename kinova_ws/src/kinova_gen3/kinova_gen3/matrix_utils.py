@@ -39,3 +39,11 @@ def compute_transformation(pixel_pts, world_pts):
     ])
     
     return matrix
+
+def apply_transformation(A, pixel_point):
+    """
+    Apply the 2x3 transform A to a single pixel point (xp, yp).
+    """
+    xp, yp = pixel_point
+    vec = np.array([xp, yp, 1.0])
+    return A @ vec  # (x_world, y_world)
