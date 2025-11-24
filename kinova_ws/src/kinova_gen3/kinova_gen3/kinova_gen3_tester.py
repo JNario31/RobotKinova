@@ -131,12 +131,11 @@ def place_block(node, set_tool, set_gripper, x, y, z, approach_height=15.0):
 
     return True
 
-def stack_blocks(node, set_tool, home, set_gripper, n_blocks, coords):
+def stack_blocks(node, set_tool, home, set_gripper, coords):
 
         # Pickup location configuration
-        pickup_x = coords[0][0]
-        pickup_y = coords[0][1]
         pickup_z = 10
+        n_blocks = 3
 
         # Block height
 
@@ -148,7 +147,7 @@ def stack_blocks(node, set_tool, home, set_gripper, n_blocks, coords):
 
         for i in range(n_blocks):
             pick_block(node, set_tool, set_gripper, 
-                    pickup_x, pickup_y, pickup_z, 
+                    coords[i][0], coords[i][1], pickup_z, 
                     approach_height=approach_height)
             time.sleep(1.5)
         
@@ -163,9 +162,6 @@ def main():
     get_coords = node.create_client(GetCoords, "/get_coords")
     while not get_coords.wait_for_service(timeout_sec=1.0):
         node.get_logger().info('Waiting for get_coords')
-
-    coords = do_get_coords(node, get_coords)
-    #stack_blocks(node, set_tool, home, set_gripper, 3, coords)
 
     get_tool = node.create_client(GetTool, "/get_tool")
     while not get_tool.wait_for_service(timeout_sec=1.0):
@@ -194,6 +190,9 @@ def main():
     home = node.create_client(Status, "/home")
     while not home.wait_for_service(timeout_sec=1.0):
         node.get_logger().info('Waiting for home')
+
+    coords = do_get_coords(node, get_coords)
+    stack_blocks(node, set_tool, home, set_gripper, coords)
 
     
 
