@@ -5,7 +5,6 @@ import numpy as np
 from inference_sdk import InferenceHTTPClient
 from kinova_gen3_interfaces.srv import GetCoords
 from kinova_gen3.matrix_utils import compute_transformation, apply_transformation
-import pickle
 
 
 
@@ -83,8 +82,6 @@ class CameraNode(Node):
         # response.x_coords = [0.1, 0.2, 0.3]
         # response.y_coords = [0.15, 0.25, 0.35]
         # response.class_names = ['red', 'blue', 'green']
-        
-        return response
 
 def main(args=None):
     rclpy.init(args=args)
