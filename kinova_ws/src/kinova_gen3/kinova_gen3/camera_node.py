@@ -34,6 +34,12 @@ class CameraNode(Node):
         """Process image and return detected coordinates"""
         self.get_logger().info('Processing image for coordinates...')
         
+        # Debug: Print current working directory
+        import os
+        self.get_logger().info(f'Current working directory: {os.getcwd()}')
+        self.get_logger().info(f'Looking for image at: {os.path.abspath("undistorted_image.jpg")}')
+        self.get_logger().info(f'Image exists: {os.path.exists("undistorted_image.jpg")}
+
         # Run inference
         result = CLIENT.infer("undistorted_image.jpg", model_id="cube-color-gzmh4/14")
         preds = result['predictions']
