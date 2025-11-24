@@ -135,7 +135,7 @@ def stack_blocks(node, set_tool, home, set_gripper, coords):
 
         # Pickup location configuration
         pickup_z = 0.01
-        n_blocks = 3
+        n_blocks = 4
 
         # Block height
 
@@ -146,10 +146,10 @@ def stack_blocks(node, set_tool, home, set_gripper, coords):
         time.sleep(1.5)
 
         for i in range(n_blocks):
-            x = -coords[i][1]
-            y = coords[i][0]
+            x = coords[i][0]
+            y = coords[i][1]
             pick_block(node, set_tool, set_gripper, 
-                    coords[i][1], coords[i][0], pickup_z, 
+                    x, y, pickup_z, 
                     approach_height=approach_height)
             time.sleep(1.5)
         
