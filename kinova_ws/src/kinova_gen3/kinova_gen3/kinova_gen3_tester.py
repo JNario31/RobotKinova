@@ -149,7 +149,7 @@ def stack_blocks(node, set_tool, home, set_gripper, coords):
             x = coords[i][0]
             y = coords[i][1]
             pick_block(node, set_tool, set_gripper, 
-                    coords[i][1], coords[i][0], pickup_z, 
+                    coords[i][1] - 0.15, coords[i][0], pickup_z, 
                     approach_height=approach_height)
             time.sleep(1.5)
         
