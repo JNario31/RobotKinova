@@ -152,11 +152,11 @@ def stack_blocks(node, set_tool, home, set_gripper, coords, n_blocks):
         for i in range(n):
             if(coords[i][2] == "red"):
                 place_x = 0.3
-                place_y = 0.3
+                place_y = 0.4
                 place_z = 0.1
             elif(coords[i][2] == "green"):
-                place_x = 0.8
-                place_y = 0.8
+                place_x = 0.4
+                place_y = 0.4
                 place_z = 0.1
             elif(coords[i][2] == "yellow"):
                 place_x = -0.6
