@@ -203,34 +203,33 @@ def main():
 
     coords = do_get_coords(node, get_coords)
 
-#     class_names = [coord[2] for coord in coords]
-#     unique_classes = set(class_names)
-#     picture_postion(node, set_tool)
+    class_names = [coord[2] for coord in coords]
+    unique_classes = set(class_names)
+    picture_postion(node, set_tool)
 
-#    # Define base end coordinates
-#     base_x = 0.5  # Starting x position
-#     base_y = 0.5  # Fixed y position
-#     base_z = 0.1  # Fixed z position
-#     x_increment = -0.05  # 5cm increment for each color (0.05m = 5cm)
+   # Define base end coordinates
+    base_x = 0.5  # Starting x position
+    base_y = 0.5  # Fixed y position
+    base_z = 0.1  # Fixed z position
+    x_increment = -0.05  # 5cm increment for each color (0.05m = 5cm)
    
-#     for i, color in enumerate(unique_classes):
-#         # Filter coordinates for this specific color
-#         color_coords = [coord for coord in coords if coord[2] == color]
-#         n_blocks = len(color_coords)
+    for i, color in enumerate(unique_classes):
+        # Filter coordinates for this specific color
+        color_coords = [coord for coord in coords if coord[2] == color]
+        n_blocks = len(color_coords)
     
-#         # Calculate end position for this color
-#         end_x = base_x + (i * x_increment)
-#         end_y = base_y
-#         end_z = base_z
+        # Calculate end position for this color
+        end_x = base_x + (i * x_increment)
+        end_y = base_y
+        end_z = base_z
 
-#         print(f"Stacking {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f})")
+        print(f"Stacking {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f})")
     
-#         stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
-#         picture_postion(node, set_tool)
+        stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
+        picture_postion(node, set_tool)
 
-#     picture_postion(node, set_tool)
+    picture_postion(node, set_tool)
 
-    do_home(node, home)
 
 if __name__ == '__main__':
     main()
