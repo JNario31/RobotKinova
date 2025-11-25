@@ -156,7 +156,7 @@ def stack_blocks(node, set_tool, home, set_gripper, coords, n_blocks, x, y, z):
             x = coords[i][0]
             y = coords[i][1]
             pick_block(node, set_tool, set_gripper, 
-                    coords[i][0], coords[i][1] - 0.15, pickup_z, 
+                    coords[i][1], coords[i][0] - 0.15, pickup_z, 
                     approach_height=approach_height)
             place_block(node, set_tool, set_gripper, 
                     place_x, place_y, place_z + i * block_height, 
