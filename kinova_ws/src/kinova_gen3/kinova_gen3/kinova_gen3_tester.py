@@ -141,9 +141,22 @@ def stack_blocks(node, set_tool, home, set_gripper, coords, n_blocks):
         block_height = 0.015
 
         # Place configuration
-        place_x = 0.3
-        place_y = 0.3
-        place_z = 0.1
+        if(coords[2] == "red"):
+            place_x = 0.3
+            place_y = 0.3
+            place_z = 0.1
+        elif(coords[2] == "green"):
+            place_x = 0.8
+            place_y = 0.8
+            place_z = 0.1
+        elif(coords[2] == "yellow"):
+            place_x = -0.6
+            place_y = -0.7
+            place_z = 0.1
+        else:
+            place_x = -0.6
+            place_y = 0.7
+            place_z = 0.1
 
         #Approach height
         approach_height = 0.15
@@ -204,24 +217,18 @@ def main():
 
     class_names = [coord[2] for coord in coords]
     unique_classes = set(class_names)
+   
 
-    color_filter = input("Enter color to stack (or 'all' for all colors): ").strip().lower()
-
-    if color_filter == 'all':
-        colors_to_stack = unique_classes
-    else:
-        if color_filter in unique_classes:
-            colors_to_stack = [color_filter]
-        else:
-            print(f"Color '{color_filter}' not found. Available colors: {unique_classes}")
-            colors_to_stack = []
-
-    for color in colors_to_stack:
-        color_coords = [coord for coord in coords if coord[2] == color]
-        stack_blocks(node, set_tool, home, set_gripper, color_coords, len(color_coords))
-        do_home(node, home)
+    for classes in unique_classes:
+        red_coords = [coord for coord in coords if coord[2] == "red"]
+        green_coords = [coord for coord in coords if coord[2] == "green"]
+        yellow_coords = [coord for coord in coords if coord[2] == "yellow"]
+        stack_blocks(node, set_tool, home, set_gripper, red_coords, len(red_coords))
+        do_home()
+        stack_blocks(node, set_tool, home, set_gripper, green_coords, len(green_coords))
+        do_home()
+        stack_blocks(node, set_tool, home, set_gripper, yellow_coords, len(yellow_coords))
+        do_home()
 
 if __name__ == '__main__':
     main()
-
-
