@@ -141,22 +141,7 @@ def stack_blocks(node, set_tool, home, set_gripper, coords, n_blocks):
         block_height = 0.015
 
         # Place configuration
-        if(coords[2] == "red"):
-            place_x = 0.3
-            place_y = 0.3
-            place_z = 0.1
-        elif(coords[2] == "green"):
-            place_x = 0.8
-            place_y = 0.8
-            place_z = 0.1
-        elif(coords[2] == "yellow"):
-            place_x = -0.6
-            place_y = -0.7
-            place_z = 0.1
-        else:
-            place_x = -0.6
-            place_y = 0.7
-            place_z = 0.1
+        
 
         #Approach height
         approach_height = 0.15
@@ -165,6 +150,23 @@ def stack_blocks(node, set_tool, home, set_gripper, coords, n_blocks):
         time.sleep(1.5)
 
         for i in range(n):
+            if(coords[i][2] == "red"):
+                place_x = 0.3
+                place_y = 0.3
+                place_z = 0.1
+            elif(coords[i][2] == "green"):
+                place_x = 0.8
+                place_y = 0.8
+                place_z = 0.1
+            elif(coords[i][2] == "yellow"):
+                place_x = -0.6
+                place_y = -0.7
+                place_z = 0.1
+            else:
+                place_x = -0.6
+                place_y = 0.7
+                place_z = 0.1
+        
             x = coords[i][0]
             y = coords[i][1]
             pick_block(node, set_tool, set_gripper, 
