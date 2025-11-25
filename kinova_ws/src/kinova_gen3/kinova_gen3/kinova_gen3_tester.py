@@ -1,4 +1,5 @@
 from kinova_gen3_interfaces.srv import Status, SetGripper, GetGripper, SetJoints, GetJoints, GetTool, SetTool, GetCoords
+from kinova_gen3_node import example_angular_action_movement
 import rclpy
 from rclpy.node import Node
 import time
@@ -106,7 +107,7 @@ def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
     return True
 
 def picture_postion(node, set_tool):
-    do_set_tool(node, set_tool, 0.1, 0.0, 0.6, 90.0, 0.0, 90.0)  # Move above block
+    do_set_tool(node, set_tool,0.0, 0.15, 0.8, 0.0,0.0,0.0)
     time.sleep(1.5)
 
 def place_block(node, set_tool, set_gripper, x, y, z, approach_height=15.0):
