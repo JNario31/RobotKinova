@@ -1,5 +1,4 @@
 from kinova_gen3_interfaces.srv import Status, SetGripper, GetGripper, SetJoints, GetJoints, GetTool, SetTool, GetCoords
-from kinova_gen3_node import example_angular_action_movement
 import rclpy
 from rclpy.node import Node
 import time
