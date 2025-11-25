@@ -38,6 +38,9 @@ class CameraNode(Node):
         # Run inference
         result = CLIENT.infer(self.image_path, model_id="cube-color-gzmh4/14")
         preds = result['predictions']
+        self.get_logger().info(f'Found {len(preds)} predictions')
+        for i, pred in enumerate(preds):
+            self.get_logger().info(f"Prediction {i}: {pred}")
         
         # Find blue square for calibration
         blue_square_pred = None
