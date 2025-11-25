@@ -219,7 +219,7 @@ def main():
     for color in colors_to_stack:
         color_coords = [coord for coord in coords if coord[2] == color]
         stack_blocks(node, set_tool, home, set_gripper, color_coords, len(color_coords))
-        do_home()
+        do_home(node, home)
 
 if __name__ == '__main__':
     main()
