@@ -44,7 +44,44 @@ def example_move_to_home_position(base):
     base_servo_mode.servoing_mode = Base_pb2.SINGLE_LEVEL_SERVOING
     base.SetServoingMode(base_servo_mode)
 
-    custom_home_angles = [0.0, 15.0, 180.0, 230.0, 0.0, 55.0]
+    # Move arm to ready position
+    print("Moving the arm to a safe position")
+    action_type = Base_pb2.RequestedActionType()
+    action_type.action_type = Base_pb2.REACH_JOINT_ANGLES
+    action_list = base.ReadAllActions(action_type)
+    action_handle = None
+    for action in action_list.action_list:
+        if action.name == "Home":
+            action_handle = action.handle
+
+    if action_handle == None:
+        print("Can't reach safe position. Exiting")
+        return False
+
+    e = threading.Event()
+    notification_handle = base.OnNotificationActionTopic(
+        check_for_end_or_abort(e),
+        Base_pb2.NotificationOptions()
+    )
+
+    base.ExecuteActionFromReference(action_handle)
+    finished = e.wait(TIMEOUT_DURATION)
+    base.Unsubscribe(notification_handle)
+
+    if finished:
+        print("Safe position reached")
+    else:
+        print("Timeout on action notification wait")
+    return finished
+
+def example_move_to_custom_home_position(base):
+    # Define your custom home joint angles (in degrees)
+    custom_home_angles = [0.0, 15.0, 180.0, 230.0, 0.0, 55.0]  # Adjust these!
+    
+    # Make sure the arm is in Single Level Servoing mode
+    base_servo_mode = Base_pb2.ServoingModeInformation()
+    base_servo_mode.servoing_mode = Base_pb2.SINGLE_LEVEL_SERVOING
+    base.SetServoingMode(base_servo_mode)
 
     print("Moving the arm to custom home position")
     action = Base_pb2.Action()
@@ -201,7 +238,7 @@ class Kinova_Gen3_Interface(Node):
         """Move to home"""
         self.get_logger().info(f'{self.get_name()} moving to home')
 
-        response.status = example_move_to_custom_home_position(self._base)  # Use custom
+        response.status = example_move_to_custom_home_position(self._base)
         return response
 
     def _handle_get_gripper(self, request, response):
