@@ -97,7 +97,7 @@ def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
 
     # Close gripper (adjust 1.0 based on block size)
     do_set_gripper(node, set_gripper, 1.0)
-    time.sleep(1.5)
+    time.sleep(2.0)
 
     # Lift Block
     do_set_tool(node, set_tool, x, y, z + approach_height, 180.0, 0.0, 180.0) 
@@ -108,10 +108,10 @@ def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
 def place_block(node, set_tool, set_gripper, x, y, z, approach_height=15.0):
 
     # Convert from cm to m for API
-    x = x / 100.0
-    y = y / 100.0
-    z = z / 100.0
-    approach_height = approach_height / 100.0
+    x = x 
+    y = y
+    z = z
+    approach_height = approach_height
 
     # Move to position above target
     do_set_tool(node, set_tool, x, y, z + approach_height, 180.0, 0.0, 180.0)  # Move above block
@@ -131,13 +131,19 @@ def place_block(node, set_tool, set_gripper, x, y, z, approach_height=15.0):
 
     return True
 
-def stack_blocks(node, set_tool, home, set_gripper, coords):
+def stack_blocks(node, set_tool, home, set_gripper, coords, n_blocks):
 
         # Pickup location configuration
-        pickup_z = 0.01
-        n_blocks = 4
+        pickup_z = 0.0
+        n = n_blocks
 
         # Block height
+        block_height = 0.015
+
+        # Place configuration
+        place_x = 0.3
+        place_y = 0.3
+        place_z = 0.1
 
         #Approach height
         approach_height = 0.15
@@ -145,16 +151,17 @@ def stack_blocks(node, set_tool, home, set_gripper, coords):
         do_home(node, home)
         time.sleep(1.5)
 
-        for i in range(n_blocks):
+        for i in range(n):
             x = coords[i][0]
             y = coords[i][1]
             pick_block(node, set_tool, set_gripper, 
                     coords[i][1], coords[i][0] - 0.15, pickup_z, 
                     approach_height=approach_height)
+            place_block(node, set_tool, set_gripper, 
+                    place_x, place_y, place_z + i * block_height, 
+                    approach_height=approach_height)
             time.sleep(1.5)
         
-        do_home(node, home)
-        time.sleep(1.5)
 
 
 def main():
@@ -194,10 +201,25 @@ def main():
         node.get_logger().info('Waiting for home')
 
     coords = do_get_coords(node, get_coords)
-    stack_blocks(node, set_tool, home, set_gripper, coords)
 
-    
+    class_names = [coord[2] for coord in coords]
+    unique_classes = set(class_names)
 
+    color_filter = input("Enter color to stack (or 'all' for all colors): ").strip().lower()
+
+    if color_filter == 'all':
+        colors_to_stack = unique_classes
+    else:
+        if color_filter in unique_classes:
+            colors_to_stack = [color_filter]
+        else:
+            print(f"Color '{color_filter}' not found. Available colors: {unique_classes}")
+            colors_to_stack = []
+
+    for color in colors_to_stack:
+        color_coords = [coord for coord in coords if coord[2] == color]
+        stack_blocks(node, set_tool, home, set_gripper, color_coords, len(color_coords))
+        do_home()
 
 if __name__ == '__main__':
     main()
