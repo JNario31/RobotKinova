@@ -233,7 +233,7 @@ def main():
         end_y = base_y
         end_z = base_z
 
-        print(f"Stacking color {unique_classes[i]} {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f})")
+        print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f})")
     
         stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
         picture_postion(node, set_tool)
