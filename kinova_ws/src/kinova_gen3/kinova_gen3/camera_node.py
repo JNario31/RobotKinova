@@ -102,24 +102,25 @@ class CameraNode(Node):
             conf = pred['confidence']
             xw, yw = apply_transformation(matrix, (xp, yp))
             
-            x_coords.append(float(xw))
-            y_coords.append(float(yw))
-            class_names.append(pred['class'])
-            
-            self.get_logger().info(f"{pred['class']}: ({xw:.4f}, {yw:.4f})")
-            
-            x1 = int(xp - w/2)
-            y1 = int(yp - h/2)
-            x2 = int(xp + w/2)
-            y2 = int(yp + h/2)
+            if(class_name != "blue" and class_name != "broken"):
+                x_coords.append(float(xw))
+                y_coords.append(float(yw))
+                class_names.append(pred['class'])
+                
+                self.get_logger().info(f"{pred['class']}: ({xw:.4f}, {yw:.4f})")
+                
+                x1 = int(xp - w/2)
+                y1 = int(yp - h/2)
+                x2 = int(xp + w/2)
+                y2 = int(yp + h/2)
 
-            # Draw bounding box
-            cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                # Draw bounding box
+                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-            # Draw label
-            label = f"{class_name} ({conf:.2f})"
-            cv2.putText(img, label, (x1, y1-10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,255,0), 2)
+                # Draw label
+                label = f"{class_name} ({conf:.2f})"
+                cv2.putText(img, label, (x1, y1-10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,255,0), 2)
         
         response.x_coords = x_coords
         response.y_coords = y_coords
