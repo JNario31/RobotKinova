@@ -106,7 +106,7 @@ def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
     return True
 
 def picture_postion(node, set_tool, approach_height=15.0):
-    do_set_tool(node, set_tool, 0.0, 0.1, 0.6 + approach_height, 180.0, 0.0, 90.0)  # Move above block
+    do_set_tool(node, set_tool, 0.0, 0.1, 0.6 + approach_height, 180.0, 45.0, 90.0)  # Move above block
     time.sleep(1.5)
 
 def place_block(node, set_tool, set_gripper, x, y, z, approach_height=15.0):
