@@ -106,7 +106,7 @@ def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
     return True
 
 def picture_postion(node, set_tool):
-    do_set_tool(node, set_tool,0.0, 0.15, 0.8, 0.0,0.0,0.0)
+    do_set_tool(node, set_tool,0.1, 0.0, 0.7, 180.0,0.0,180.0)
     time.sleep(1.5)
 
 def place_block(node, set_tool, set_gripper, x, y, z, approach_height=15.0):
@@ -228,7 +228,7 @@ def main():
     #     stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
     #     picture_postion(node, set_tool)
 
-    do_home(node, home)
+    picture_postion(node, set_tool)
 
 if __name__ == '__main__':
     main()
