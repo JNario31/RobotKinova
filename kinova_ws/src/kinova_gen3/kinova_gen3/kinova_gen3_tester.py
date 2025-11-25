@@ -164,6 +164,7 @@ def stack_blocks(node, set_tool, home, set_gripper, coords, n_blocks, x, y, z):
                 y = y + 0.1
             elif y < -0.2:
                 y = y + 0.2
+                
             pick_block(node, set_tool, set_gripper, 
                     y, x, pickup_z, 
                     approach_height=approach_height)
