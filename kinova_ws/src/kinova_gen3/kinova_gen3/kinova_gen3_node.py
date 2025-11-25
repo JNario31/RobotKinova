@@ -44,19 +44,19 @@ def example_move_to_home_position(base):
     base_servo_mode.servoing_mode = Base_pb2.SINGLE_LEVEL_SERVOING
     base.SetServoingMode(base_servo_mode)
 
-    # Move arm to ready position
-    print("Moving the arm to a safe position")
-    action_type = Base_pb2.RequestedActionType()
-    action_type.action_type = Base_pb2.REACH_JOINT_ANGLES
-    action_list = base.ReadAllActions(action_type)
-    action_handle = None
-    for action in action_list.action_list:
-        if action.name == "Home":
-            action_handle = action.handle
+    custom_home_angles = [0.0, 15.0, 180.0, 230.0, 0.0, 55.0]
 
-    if action_handle == None:
-        print("Can't reach safe position. Exiting")
-        return False
+    print("Moving the arm to custom home position")
+    action = Base_pb2.Action()
+    action.name = "Custom home position"
+    action.application_data = ""
+
+    actuator_count = base.GetActuatorCount()
+
+    for joint_id in range(actuator_count.count):
+        joint_angle = action.reach_joint_angles.joint_angles.joint_angles.add()
+        joint_angle.joint_identifier = joint_id
+        joint_angle.value = custom_home_angles[joint_id]
 
     e = threading.Event()
     notification_handle = base.OnNotificationActionTopic(
@@ -64,12 +64,12 @@ def example_move_to_home_position(base):
         Base_pb2.NotificationOptions()
     )
 
-    base.ExecuteActionFromReference(action_handle)
+    base.ExecuteAction(action)
     finished = e.wait(TIMEOUT_DURATION)
     base.Unsubscribe(notification_handle)
 
     if finished:
-        print("Safe position reached")
+        print("Custom home position reached")
     else:
         print("Timeout on action notification wait")
     return finished
@@ -201,7 +201,7 @@ class Kinova_Gen3_Interface(Node):
         """Move to home"""
         self.get_logger().info(f'{self.get_name()} moving to home')
 
-        response.status = example_move_to_home_position(self._base)
+        response.status = example_move_to_custom_home_position(self._base)  # Use custom
         return response
 
     def _handle_get_gripper(self, request, response):
