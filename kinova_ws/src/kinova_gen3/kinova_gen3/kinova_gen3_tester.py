@@ -106,7 +106,7 @@ def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
     return True
 
 def picture_postion(node, set_tool):
-    do_set_tool(node, set_tool, 0.4, 0.4, 0.3, 180.0, 45.0, 90.0)  # Move above block
+    do_set_tool(node, set_tool, 0.0, 0.1, 0.6, 180.0, 0.0, 90.0)  # Move above block
     time.sleep(1.5)
 
 def place_block(node, set_tool, set_gripper, x, y, z, approach_height=15.0):
@@ -151,9 +151,6 @@ def stack_blocks(node, set_tool, home, set_gripper, coords, n_blocks, x, y, z):
 
         #Approach height
         approach_height = 0.15
-
-        do_home(node, home)
-        time.sleep(1.5)
 
         for i in range(n):
             x = coords[i][0]
