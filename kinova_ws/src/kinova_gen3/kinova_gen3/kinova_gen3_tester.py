@@ -156,14 +156,14 @@ def stack_blocks(node, set_tool, home, set_gripper, coords, n_blocks, x, y, z):
             x = coords[i][0]
             y = coords[i][1]
 
-            if y > 0.2:
-                y = y - 0.2
-            elif y > 0 and y <= 0.2:
-                y = y - 0.1
-            elif y < 0 and y >= -0.2:
-                y = y + 0.1
-            elif y < -0.2:
-                y = y + 0.2
+            # if y > 0.2:
+            #     y = y - 0.2
+            # elif y > 0 and y <= 0.2:
+            #     y = y - 0.1
+            # elif y < 0 and y >= -0.2:
+            #     y = y + 0.1
+            # elif y < -0.2:
+            #     y = y + 0.2
                 
             pick_block(node, set_tool, set_gripper, 
                     y - 0.15, x, pickup_z, 
@@ -233,7 +233,7 @@ def main():
         end_y = base_y
         end_z = base_z
 
-        print(f"Stacking {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f})")
+        print(f"Stacking color {unique_classes[i]} {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f})")
     
         stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
         picture_postion(node, set_tool)
