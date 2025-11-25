@@ -105,6 +105,10 @@ def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
 
     return True
 
+def picture_postion(node, set_tool, approach_height=15.0):
+    do_set_tool(node, set_tool, 0.0, 0.1, 0.6 + approach_height, 180.0, 0.0, 90.0)  # Move above block
+    time.sleep(1.5)
+
 def place_block(node, set_tool, set_gripper, x, y, z, approach_height=15.0):
 
     # Convert from cm to m for API
@@ -225,7 +229,7 @@ def main():
         print(f"Stacking {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f})")
     
         stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
-        do_home(node, home)
+        picture_postion(node, set_tool)
 
 if __name__ == '__main__':
     main()

@@ -74,43 +74,6 @@ def example_move_to_home_position(base):
         print("Timeout on action notification wait")
     return finished
 
-def example_move_to_custom_home_position(base):
-    # Define your custom home joint angles (in degrees)
-    custom_home_angles = [0.0, 15.0, 180.0, 230.0, 0.0, 55.0]  # Adjust these!
-    
-    # Make sure the arm is in Single Level Servoing mode
-    base_servo_mode = Base_pb2.ServoingModeInformation()
-    base_servo_mode.servoing_mode = Base_pb2.SINGLE_LEVEL_SERVOING
-    base.SetServoingMode(base_servo_mode)
-
-    print("Moving the arm to custom home position")
-    action = Base_pb2.Action()
-    action.name = "Custom home position"
-    action.application_data = ""
-
-    actuator_count = base.GetActuatorCount()
-
-    for joint_id in range(actuator_count.count):
-        joint_angle = action.reach_joint_angles.joint_angles.joint_angles.add()
-        joint_angle.joint_identifier = joint_id
-        joint_angle.value = custom_home_angles[joint_id]
-
-    e = threading.Event()
-    notification_handle = base.OnNotificationActionTopic(
-        check_for_end_or_abort(e),
-        Base_pb2.NotificationOptions()
-    )
-
-    base.ExecuteAction(action)
-    finished = e.wait(TIMEOUT_DURATION)
-    base.Unsubscribe(notification_handle)
-
-    if finished:
-        print("Custom home position reached")
-    else:
-        print("Timeout on action notification wait")
-    return finished
-
 def set_gripper(base, position):
     gripper_command = Base_pb2.GripperCommand()
     finger = gripper_command.gripper.finger.add()
@@ -238,7 +201,7 @@ class Kinova_Gen3_Interface(Node):
         """Move to home"""
         self.get_logger().info(f'{self.get_name()} moving to home')
 
-        response.status = example_move_to_custom_home_position(self._base)
+        response.status = example_move_to_home_position(self._base)
         return response
 
     def _handle_get_gripper(self, request, response):
