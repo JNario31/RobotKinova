@@ -97,7 +97,7 @@ def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
 
     # Close gripper (adjust 1.0 based on block size)
     do_set_gripper(node, set_gripper, 1.0)
-    time.sleep(2.0)
+    time.sleep(1.5)
 
     # Lift Block
     do_set_tool(node, set_tool, x, y, z + approach_height, 180.0, 0.0, 180.0) 
@@ -131,7 +131,7 @@ def place_block(node, set_tool, set_gripper, x, y, z, approach_height=15.0):
 
     return True
 
-def stack_blocks(node, set_tool, home, set_gripper, coords, n_blocks):
+def stack_blocks(node, set_tool, home, set_gripper, coords, n_blocks, x, y, z):
 
         # Pickup location configuration
         pickup_z = 0.0
@@ -141,7 +141,9 @@ def stack_blocks(node, set_tool, home, set_gripper, coords, n_blocks):
         block_height = 0.015
 
         # Place configuration
-        
+        place_x = x
+        place_y = y
+        place_z = z
 
         #Approach height
         approach_height = 0.15
@@ -150,23 +152,6 @@ def stack_blocks(node, set_tool, home, set_gripper, coords, n_blocks):
         time.sleep(1.5)
 
         for i in range(n):
-            if(coords[i][2] == "red"):
-                place_x = 0.3
-                place_y = 0.4
-                place_z = 0.1
-            elif(coords[i][2] == "green"):
-                place_x = 0.4
-                place_y = 0.4
-                place_z = 0.1
-            elif(coords[i][2] == "yellow"):
-                place_x = -0.6
-                place_y = -0.7
-                place_z = 0.1
-            else:
-                place_x = -0.6
-                place_y = 0.7
-                place_z = 0.1
-        
             x = coords[i][0]
             y = coords[i][1]
             pick_block(node, set_tool, set_gripper, 
@@ -219,17 +204,28 @@ def main():
 
     class_names = [coord[2] for coord in coords]
     unique_classes = set(class_names)
-   
+    n = len(unique_classes)
 
-    red_coords = [coord for coord in coords if coord[2] == "red"]
-    green_coords = [coord for coord in coords if coord[2] == "green"]
-    yellow_coords = [coord for coord in coords if coord[2] == "yellow"]
-    stack_blocks(node, set_tool, home, set_gripper, red_coords, len(red_coords))
-    do_home(node, home)
-    stack_blocks(node, set_tool, home, set_gripper, green_coords, len(green_coords))
-    do_home(node, home)
-    stack_blocks(node, set_tool, home, set_gripper, yellow_coords, len(yellow_coords))
-    do_home(node,home)
+    # Define base end coordinates
+    base_x = 0.5  # Starting x position
+    base_y = 0.5  # Fixed y position
+    base_z = 0.1  # Fixed z position
+    x_increment = -0.05  # 5cm increment for each color (0.05m = 5cm)
+   
+    for i, color in enumerate(unique_classes):
+        # Filter coordinates for this specific color
+        color_coords = [coord for coord in coords if coord[2] == color]
+        n_blocks = len(color_coords)
+    
+        # Calculate end position for this color
+        end_x = base_x + (i * x_increment)
+        end_y = base_y
+        end_z = base_z
+
+        print(f"Stacking {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f})")
+    
+        stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
+        do_home(node, home)
 
 if __name__ == '__main__':
     main()
