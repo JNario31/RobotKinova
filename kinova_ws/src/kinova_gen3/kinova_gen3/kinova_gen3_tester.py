@@ -225,11 +225,11 @@ def main():
     green_coords = [coord for coord in coords if coord[2] == "green"]
     yellow_coords = [coord for coord in coords if coord[2] == "yellow"]
     stack_blocks(node, set_tool, home, set_gripper, red_coords, len(red_coords))
-    do_home()
+    do_home(node, home)
     stack_blocks(node, set_tool, home, set_gripper, green_coords, len(green_coords))
-    do_home()
+    do_home(node, home)
     stack_blocks(node, set_tool, home, set_gripper, yellow_coords, len(yellow_coords))
-    do_home()
+    do_home(node,home)
 
 if __name__ == '__main__':
     main()
