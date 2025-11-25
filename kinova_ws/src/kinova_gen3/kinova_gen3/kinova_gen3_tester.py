@@ -106,7 +106,7 @@ def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
     return True
 
 def picture_postion(node, set_tool):
-    do_set_tool(node, set_tool, 0.1, 0.0, 0.6, 180.0, 0.0, 0.0)  # Move above block
+    do_set_tool(node, set_tool, 0.1, 0.0, 0.6, 180.0, 90.0, 90.0)  # Move above block
     time.sleep(1.5)
 
 def place_block(node, set_tool, set_gripper, x, y, z, approach_height=15.0):
@@ -205,7 +205,7 @@ def main():
 
     class_names = [coord[2] for coord in coords]
     unique_classes = set(class_names)
-    n = len(unique_classes)
+    picture_postion(node, set_tool)
 
     # Define base end coordinates
     base_x = 0.5  # Starting x position
