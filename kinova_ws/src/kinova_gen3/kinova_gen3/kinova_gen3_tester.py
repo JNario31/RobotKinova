@@ -108,9 +108,8 @@ def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
     return True
 
 def picture_postion(node, set_tool):
-    #do_set_tool(node, set_tool,0.1, 0.3, 0.4, 180.0,0.0,180.0)
-    do_set_tool(node, set_tool, 0.5, 0.0, 0.4, 180.0, 0.0, 180.0)
-    #take_picture()
+    do_set_tool(node, set_tool,0.1, 0.3, 0.4, 180.0,0.0,180.0)
+    take_picture()
     time.sleep(1.5)
 
 def take_picture():
@@ -248,10 +247,10 @@ def main():
     while not home.wait_for_service(timeout_sec=1.0):
         node.get_logger().info('Waiting for home')
 
-    # coords = do_get_coords(node, get_coords)
+    coords = do_get_coords(node, get_coords)
 
-    #class_names = [coord[2] for coord in coords]
-    #unique_classes = set(class_names)
+    class_names = [coord[2] for coord in coords]
+    unique_classes = set(class_names)
     picture_postion(node, set_tool)
 
    # Define base end coordinates
@@ -260,20 +259,20 @@ def main():
     base_z = 0.1  # Fixed z position
     x_increment = -0.10  # 5cm increment for each color (0.05m = 5cm)
    
-    # for i, color in enumerate(unique_classes):
-    #     picture_postion(node, set_tool)
-    #     # Filter coordinates for this specific color
-    #     color_coords = [coord for coord in coords if coord[2] == color]
-    #     n_blocks = len(color_coords)
+    for i, color in enumerate(unique_classes):
+         picture_postion(node, set_tool)
+         # Filter coordinates for this specific color
+         color_coords = [coord for coord in coords if coord[2] == color]
+         n_blocks = len(color_coords)
     
-    #     # Calculate end position for this color
-    #     end_x = base_x + (i * x_increment)
-    #     end_y = base_y
-    #     end_z = base_z
+         # Calculate end position for this color
+         end_x = base_x + (i * x_increment)
+         end_y = base_y
+         end_z = base_z
 
-    #     print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f})")
+         print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f})")
     
-    #     stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
+         stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
         
 
 
