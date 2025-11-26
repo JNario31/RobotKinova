@@ -80,7 +80,7 @@ def do_get_coords(node, get_coords):
 def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
 
     # Convert from cm to m for API
-    x = x 
+    x = x
     y = y 
     z = z 
     approach_height = approach_height
