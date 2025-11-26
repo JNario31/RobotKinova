@@ -108,7 +108,9 @@ def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
     return True
 
 def picture_postion(node, set_tool):
-    do_set_tool(node, set_tool,0.1, 0.3, 0.4, 180.0,0.0,180.0)
+    #do_set_tool(node, set_tool,0.1, 0.3, 0.4, 180.0,0.0,180.0)
+    do_set_tool(node, set_tool, 0.5, 0.0, 0.4, 180.0, 0.0, 180.0)
+    #take_picture()
     time.sleep(1.5)
 
 def take_picture():
@@ -118,70 +120,28 @@ def take_picture():
     camera_matrix = calib['camera_matrix']
     dist_coeffs = calib['dist_coeffs']
 
-    # Test undistortion
-    print("\nShowing undistortion test. Press SPACE to save image, 'q' to exit.")
-    cap = cv2.VideoCapture(0)
+    cap = cv2.videoCapture(0)
 
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
+    ret, frame = cap.read()
+    if not ret:
+        cap.release()
+        raise RuntimeError("Failed to capture image from Camera.")
+    
+    h, w = frame.shape[:2]
+
+    new_camera_matrix, roi = cv2.getOptimalNewCameraMatrix(
+        camera_matrix, dist_coeffs, (w, h), 1, (w, h)
+    )
         
-        h, w = frame.shape[:2]
-        new_camera_matrix, roi = cv2.getOptimalNewCameraMatrix(
-            camera_matrix, dist_coeffs, (w, h), 1, (w, h)
-        )
-        
-        # Undistort
-        undistorted = cv2.undistort(frame, camera_matrix, dist_coeffs, 
-                                    None, new_camera_matrix)
-        
-        hsv = cv2.cvtColor(undistorted, cv2.COLOR_BGR2HSV)
-        h_channel, s_channel, v_channel = cv2.split(hsv)
-
-        # Boost saturation (colors)
-        s_channel = cv2.add(s_channel, 50)   # +50 saturation
-        s_channel = cv2.min(s_channel, 255)
-
-        # Boost brightness
-        v_channel = cv2.add(v_channel, 20)   # +20 brightness
-        v_channel = cv2.min(v_channel, 255)
-
-        # Merge and convert back to BGR
-        hsv_boosted = cv2.merge((h_channel, s_channel, v_channel))
-        enhanced = cv2.cvtColor(hsv_boosted, cv2.COLOR_HSV2BGR)
-
-        # Optional contrast boost (linear)
-        alpha = 1.2   # Contrast factor
-        beta = 0      # Additional brightness (0 = unchanged)
-        enhanced = cv2.convertScaleAbs(enhanced, alpha=alpha, beta=beta)
-
-        # Show side by side
-        combined = np.hstack([frame, enhanced])
-        cv2.putText(combined, "Original", (10, 30), 
-                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        cv2.putText(combined, "Undistorted", (w + 10, 30), 
-                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        cv2.putText(combined, "Press SPACE to save, 'q' to quit", (10, 60), 
-                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-        
-        cv2.imshow('Undistortion Test', combined)
-        
-        key = cv2.waitKey(1) & 0xFF
-        if key == ord(' '):  # SPACE key
-            cv2.imwrite('undistorted_image.jpg', enhanced)
-            cv2.imwrite('original_image.jpg', frame)
-            print("Saved undistorted_image.jpg and original_image.jpg")
-            
-            # Flash effect
-            cv2.imshow('Undistortion Test', np.ones_like(combined) * 255)
-            cv2.waitKey(100)
-            
-        elif key == ord('q'):
-            break
+    # Undistort
+    undistorted = cv2.undistort(frame, camera_matrix, dist_coeffs, 
+                                None, new_camera_matrix)    
+    
+    cv2.imwrite('undistorted_image.jpg', undistorted)
+    cv2.imwrite('original_image.jpg', frame)
 
     cap.release()
-    cv2.destroyAllWindows()
+    print("Saved undistorted_image.jpg and original_image.jpg")
     
 
     
@@ -288,10 +248,10 @@ def main():
     while not home.wait_for_service(timeout_sec=1.0):
         node.get_logger().info('Waiting for home')
 
-    coords = do_get_coords(node, get_coords)
+    # coords = do_get_coords(node, get_coords)
 
-    class_names = [coord[2] for coord in coords]
-    unique_classes = set(class_names)
+    #class_names = [coord[2] for coord in coords]
+    #unique_classes = set(class_names)
     picture_postion(node, set_tool)
 
    # Define base end coordinates
@@ -300,20 +260,20 @@ def main():
     base_z = 0.1  # Fixed z position
     x_increment = -0.10  # 5cm increment for each color (0.05m = 5cm)
    
-    for i, color in enumerate(unique_classes):
-        picture_postion(node, set_tool)
-        # Filter coordinates for this specific color
-        color_coords = [coord for coord in coords if coord[2] == color]
-        n_blocks = len(color_coords)
+    # for i, color in enumerate(unique_classes):
+    #     picture_postion(node, set_tool)
+    #     # Filter coordinates for this specific color
+    #     color_coords = [coord for coord in coords if coord[2] == color]
+    #     n_blocks = len(color_coords)
     
-        # Calculate end position for this color
-        end_x = base_x + (i * x_increment)
-        end_y = base_y
-        end_z = base_z
+    #     # Calculate end position for this color
+    #     end_x = base_x + (i * x_increment)
+    #     end_y = base_y
+    #     end_z = base_z
 
-        print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f})")
+    #     print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f})")
     
-        stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
+    #     stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
         
 
 
