@@ -113,7 +113,7 @@ def picture_postion(node, set_tool):
     time.sleep(1.5)
 
 def take_picture():
-    with open('camera_calibration.pkl', 'rb') as f:
+    with open('/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/camera_calibration.pkl', 'rb') as f:
         calib = pickle.load(f)
 
     camera_matrix = calib['camera_matrix']
