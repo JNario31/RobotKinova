@@ -136,7 +136,7 @@ def take_picture():
     undistorted = cv2.undistort(frame, camera_matrix, dist_coeffs, 
                                 None, new_camera_matrix)    
     
-    cv2.imwrite('undistorted_image.jpg', undistorted)
+    cv2.imwrite('/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/undistorted_image.jpg', undistorted)
     cv2.imwrite('original_image.jpg', frame)
 
     cap.release()
