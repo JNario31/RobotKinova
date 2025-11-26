@@ -79,9 +79,22 @@ def do_get_coords(node, get_coords):
 # For block stacking
 def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
 
+    if (y < -0.25):
+        # far left section
+        y = y + 0.15
+    elif (y < 0): # 0 is supposed to be the middle
+        # middle left section
+        y = y + 0.1
+    elif (y > 0):
+        # middle right section
+        y = y - 0.1
+    elif (y > 0.25):
+        # far right section
+        y = y - 0.15
+    
     # Convert from cm to m for API
     x = x
-    y = y 
+    #y = y + offset
     z = z 
     approach_height = approach_height
 
@@ -261,19 +274,21 @@ def main():
     x_increment = -0.10  # 5cm increment for each color (0.05m = 5cm)
    
     for i, color in enumerate(unique_classes):
-         picture_postion(node, set_tool)
-         # Filter coordinates for this specific color
-         color_coords = [coord for coord in coords if coord[2] == color]
-         n_blocks = len(color_coords)
-    
-         # Calculate end position for this color
-         end_x = base_x + (i * x_increment)
-         end_y = base_y
-         end_z = base_z
+         if color != "blue":
+             
+            picture_postion(node, set_tool)
+            # Filter coordinates for this specific color
+            color_coords = [coord for coord in coords if coord[2] == color]
+            n_blocks = len(color_coords)
+        
+            # Calculate end position for this color
+            end_x = base_x + (i * x_increment)
+            end_y = base_y
+            end_z = base_z
 
-         print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f})")
-    
-         stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
+            print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f})")
+        
+            stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
         
 
 
