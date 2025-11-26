@@ -79,18 +79,18 @@ def do_get_coords(node, get_coords):
 # For block stacking
 def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
 
-    if (y < -0.25):
+    if (y <= -0.2):
         # far left section
-        y = y + 0.15
+        y = y + 0.20
     elif (y < 0): # 0 is supposed to be the middle
         # middle left section
-        y = y + 0.1
+        y = y + 0.15
     elif (y > 0):
         # middle right section
-        y = y - 0.1
-    elif (y > 0.25):
-        # far right section
         y = y - 0.15
+    elif (y >= 0.2):
+        # far right section
+        y = y - 0.20
     
     # Convert from cm to m for API
     x = x
