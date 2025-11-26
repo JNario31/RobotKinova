@@ -22,7 +22,7 @@ class CameraNode(Node):
         super().__init__('camera_node')
         self.get_logger().info('Camera node created')
 
-        self.image_path = "/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/undistorted_image.jpg"
+        self.image_path = "/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/original_image.jpg"
         # Create service that provides coordinates
         self.create_service(GetCoords, "get_coords", self._handle_get_coords)
         

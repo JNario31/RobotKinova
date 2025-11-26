@@ -79,18 +79,18 @@ def do_get_coords(node, get_coords):
 # For block stacking
 def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
 
-    if (y <= -0.2):
-        # far left section
-        y = y + 0.20
-    elif (y < 0): # 0 is supposed to be the middle
-        # middle left section
-        y = y + 0.15
-    elif (y > 0):
-        # middle right section
-        y = y - 0.15
-    elif (y >= 0.2):
-        # far right section
-        y = y - 0.20
+    # if (y <= -0.2):
+    #     # far left section
+    #     y = y + 0.20
+    # elif (y < 0): # 0 is supposed to be the middle
+    #     # middle left section
+    #     y = y + 0.15
+    # elif (y > 0):
+    #     # middle right section
+    #     y = y - 0.15
+    # elif (y >= 0.2):
+    #     # far right section
+    #     y = y - 0.20
     
     # Convert from cm to m for API
     x = x
@@ -150,7 +150,7 @@ def take_picture():
                                 None, new_camera_matrix)    
     
     cv2.imwrite('/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/undistorted_image.jpg', undistorted)
-    cv2.imwrite('original_image.jpg', frame)
+    cv2.imwrite('/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/original_image.jpg', frame)
 
     cap.release()
     print("Saved undistorted_image.jpg and original_image.jpg")
