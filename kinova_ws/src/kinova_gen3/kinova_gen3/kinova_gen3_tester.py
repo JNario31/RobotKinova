@@ -247,11 +247,12 @@ def main():
     while not home.wait_for_service(timeout_sec=1.0):
         node.get_logger().info('Waiting for home')
 
+    picture_postion(node, set_tool)
     coords = do_get_coords(node, get_coords)
 
     class_names = [coord[2] for coord in coords]
     unique_classes = set(class_names)
-    picture_postion(node, set_tool)
+    
 
    # Define base end coordinates
     base_x = 0.5  # Starting x position
