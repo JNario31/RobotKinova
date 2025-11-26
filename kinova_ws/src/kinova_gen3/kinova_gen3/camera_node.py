@@ -102,7 +102,7 @@ class CameraNode(Node):
             conf = pred['confidence']
             xw, yw = apply_transformation(matrix, (xp, yp))
             
-            if(class_name != "blue" and class_name != "broken"):
+            if(class_name != "blue" or class_name != "broken"):
                 x_coords.append(float(xw))
                 y_coords.append(float(yw))
                 class_names.append(pred['class'])
