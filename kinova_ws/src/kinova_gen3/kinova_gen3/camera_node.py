@@ -4,13 +4,16 @@ import cv2
 import numpy as np
 from inference_sdk import InferenceHTTPClient
 from kinova_gen3_interfaces.srv import GetCoords
-from kinova_gen3.matrix_utils import compute_transformation, apply_transformation
+from kinova_gen3.matrix_utils import apply_transformation
 import os
 
 
-# --- CONSTANTS --- 
-BLUE_SQUARE_XW = 0.075
-BLUE_SQUARE_YW = 0.265
+# --- REAL-WORLD COORDINATES OF 3 BLUE SQUARES ---
+BLUE_WORLD_POINTS = {
+    "blue1": (0.075, 0.265),
+    "blue2": (0.150, 0.265),
+    "blue3": (0.225, 0.265)
+}
 
 CLIENT = InferenceHTTPClient(
     api_url="https://serverless.roboflow.com",
@@ -23,112 +26,71 @@ class CameraNode(Node):
         self.get_logger().info('Camera node created')
 
         self.image_path = "/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/original_image.jpg"
-        # Create service that provides coordinates
         self.create_service(GetCoords, "get_coords", self._handle_get_coords)
-        
-        # Store latest coordinates
-        self.coords = []
-        self.class_names = []
-        
+
     
+    def compute_affine_from_three_points(self, pixel_pts, world_pts):
+        """Returns a 2x3 affine transform from 3 world→pixel correspondences."""
+        pixel_pts = np.float32(pixel_pts)
+        world_pts = np.float32(world_pts)
+        matrix = cv2.getAffineTransform(pixel_pts, world_pts)
+        return matrix
+    
+
     def _handle_get_coords(self, request, response):
-        """Process image and return detected coordinates"""
         self.get_logger().info('Processing image for coordinates...')
-        
-        # Run inference
+
+        # Detect all objects
         result = CLIENT.infer(self.image_path, model_id="cube-color-gzmh4/14")
         preds = result['predictions']
-        self.get_logger().info(f'Found {len(preds)} predictions')
-        for i, pred in enumerate(preds):
-            self.get_logger().info(f"Prediction {i}: {pred}")
 
-        img = cv2.imread(self.image_path)
-        
-        # Find blue square for calibration
-        blue_square_pred = None
+        # Extract 3 blue calibration squares
+        calibration_pixels = []
+        calibration_world = []
+
         for pred in preds:
-            if pred['class'] == "blue":
-                blue_square_pred = pred
-                break
-        
-        if blue_square_pred is None:
-            self.get_logger().error('Blue calibration square not found!')
+            cls = pred['class']
+            if cls in BLUE_WORLD_POINTS:
+                x_center = pred['x']
+                y_center = pred['y']
+
+                calibration_pixels.append([x_center, y_center])
+                calibration_world.append(list(BLUE_WORLD_POINTS[cls]))
+
+        # Must find all three squares
+        if len(calibration_pixels) != 3:
+            self.get_logger().error(f"Found {len(calibration_pixels)} blue squares, expected 3!")
             response.x_coords = []
             response.y_coords = []
             response.class_names = []
             return response
-        
-        # Get the four corners of the blue square bounding box
-        x_center = blue_square_pred['x']
-        y_center = blue_square_pred['y']
-        width = blue_square_pred['width']
-        height = blue_square_pred['height']
-        
-        # Calculate four corners in pixel coordinates (top-left, top-right, bottom-right, bottom-left)
-        pixel_points = [
-            [x_center - width/2, y_center - height/2],  # top-left
-            [x_center + width/2, y_center - height/2],  # top-right
-            [x_center + width/2, y_center + height/2],  # bottom-right
-            [x_center - width/2, y_center + height/2]   # bottom-left
-        ]
-        
-        # Measure your actual blue square and put the dimensions here!
-        BLUE_SQUARE_SIZE = 0.045  # TODO: MEASURE THIS IN METERS!
-        
-        # Corresponding world coordinates (assuming square is axis-aligned)
-        world_points = [
-            [BLUE_SQUARE_XW - BLUE_SQUARE_SIZE/2, BLUE_SQUARE_YW - BLUE_SQUARE_SIZE/2],  # top-left
-            [BLUE_SQUARE_XW + BLUE_SQUARE_SIZE/2, BLUE_SQUARE_YW - BLUE_SQUARE_SIZE/2],  # top-right
-            [BLUE_SQUARE_XW + BLUE_SQUARE_SIZE/2, BLUE_SQUARE_YW + BLUE_SQUARE_SIZE/2],  # bottom-right
-            [BLUE_SQUARE_XW - BLUE_SQUARE_SIZE/2, BLUE_SQUARE_YW + BLUE_SQUARE_SIZE/2]   # bottom-left
-        ]
-        
-        # Compute transformation with 4 points
-        matrix = compute_transformation(pixel_points, world_points)
-        
-        self.get_logger().info(f'Transformation matrix computed:\n{matrix}')
-        
+
+        # Compute 2D affine transform
+        matrix = self.compute_affine_from_three_points(calibration_pixels, calibration_world)
+        self.get_logger().info(f"Affine transformation matrix (2x3):\n{matrix}")
+
         # Transform all detected objects
         x_coords = []
         y_coords = []
         class_names = []
-        
+
         for pred in preds:
-            xp = int(pred['x'])
-            yp = int(pred['y'])
-            w = int(pred['width'])
-            h = int(pred['height'])
-            class_name = pred['class']
-            conf = pred['confidence']
-            xw, yw = apply_transformation(matrix, (xp, yp))
+            xp = float(pred['x'])
+            yp = float(pred['y'])
             
-            if(class_name != "blue" or class_name != "broken"):
-                x_coords.append(float(xw))
-                y_coords.append(float(yw))
-                class_names.append(pred['class'])
-                
-                self.get_logger().info(f"{pred['class']}: ({xw:.4f}, {yw:.4f})")
-                
-                x1 = int(xp - w/2)
-                y1 = int(yp - h/2)
-                x2 = int(xp + w/2)
-                y2 = int(yp + h/2)
+            # Apply affine transform manually (2x3 matrix)
+            Xw = matrix[0,0]*xp + matrix[0,1]*yp + matrix[0,2]
+            Yw = matrix[1,0]*xp + matrix[1,1]*yp + matrix[1,2]
 
-                # Draw bounding box
-                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            x_coords.append(float(Xw))
+            y_coords.append(float(Yw))
+            class_names.append(pred['class'])
 
-                # Draw label
-                label = f"{class_name} ({conf:.2f})"
-                cv2.putText(img, label, (x1, y1-10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,255,0), 2)
-        
+            self.get_logger().info(f"{pred['class']}: ({Xw:.4f}, {Yw:.4f})")
+
         response.x_coords = x_coords
         response.y_coords = y_coords
         response.class_names = class_names
-
-        cv2.imwrite("output.jpg",img)
-
-
         return response
 
 def main(args=None):
