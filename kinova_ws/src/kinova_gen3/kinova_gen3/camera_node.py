@@ -11,8 +11,8 @@ import os
 # --- REAL-WORLD COORDINATES OF 3 BLUE SQUARES ---
 BLUE_WORLD_POINTS = {
     "blue1": (0.075, 0.265),
-    "blue2": (0.150, 0.265),
-    "blue3": (0.225, 0.265)
+    "blue2": (0.210, 0.350),
+    "blue3": (0.150, 0.440)
 }
 
 CLIENT = InferenceHTTPClient(
