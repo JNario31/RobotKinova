@@ -243,41 +243,51 @@ def main():
 
     class_names = [coord[2] for coord in coords]
     unique_classes = set(class_names)
-    unique_classes = {color for color in unique_classes if color not in ["blue", "broken"]}
-
+    
+    valid_coords = []
+    for coord in coords:
+        if coord[2] != "blue" and coord[2] != "broken":
+            valid_coords.append(coord)
    # Define base end coordinates
-    base_x = 0.6  # Starting x position
-    base_y = 0.6  # Fixed y position
     base_z = 0.05  # Fixed z position
-    x_increment = -0.10  # 5cm increment for each color (0.05m = 5cm)
-    j = 5
-    for i, color in enumerate(unique_classes):
-        if color != "blue":
+    n = len(valid_coords)
+    while n > 0:
+        for i, color in enumerate(unique_classes):
+            if color != "blue":
+                # Filter coordinates for this specific color
+                color_coords = [coord for coord in coords if coord[2] == color]
+                n_blocks = len(color_coords)
             
-            picture_postion(node, set_tool)
-            # Filter coordinates for this specific color
-            color_coords = [coord for coord in coords if coord[2] == color]
-            n_blocks = len(color_coords)
-        
-            # Calculate end position for this color
-            end_z = base_z # top right (from camera view)
-            if color == "red":
-                end_x = 0.0
-                end_y = 0.43
-            elif color == "green": # bottom right 
-                end_x = 0.62
-                end_y = 0.43
-            elif color == "yellow": # bottom left
-                end_x = 0.63
-                end_y = -0.43
-            else: # top left
-                end_x = 0.0
-                end_y = -0.43
+                # Calculate end position for this color
+                end_z = base_z # top right (from camera view)
+                if color == "red":
+                    end_x = 0.0
+                    end_y = 0.43
+                elif color == "green": # bottom right 
+                    end_x = 0.60
+                    end_y = 0.43
+                elif color == "yellow": # bottom left
+                    end_x = 0.60
+                    end_y = -0.43
+                else: # top left
+                    end_x = 0.0
+                    end_y = -0.43
 
-            print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f}) {color_coords}")
-            print(f"classes{unique_classes}")
-            stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
+                print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f}) {color_coords}")
+                print(f"classes{unique_classes}")
+                stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
+        picture_postion(node, set_tool)
+        coords = do_get_coords(node, get_coords)
+
+        class_names = [coord[2] for coord in coords]
+        unique_classes = set(class_names)
         
+        valid_coords = []
+        for coord in coords:
+            if coord[2] != "blue" and coord[2] != "broken":
+                valid_coords.append(coord)
+        n = len(valid_coords)
+
 
 
 
