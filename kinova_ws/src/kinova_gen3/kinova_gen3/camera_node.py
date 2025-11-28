@@ -34,6 +34,10 @@ class CameraNode(Node):
     
     def compute_affine_from_three_points(self, pixel_pts, world_pts):
         """Returns a 2x3 affine transform from 3 world→pixel correspondences."""
+        if isinstance(pixel_pts, dict):
+            pixel_pts = list(pixel_pts.values())
+        if isinstance(world_pts, dict):
+            world_pts = list(world_pts.values())
         pixel_pts = np.float32(pixel_pts)
         world_pts = np.float32(world_pts)
         matrix = cv2.getAffineTransform(pixel_pts, world_pts)
