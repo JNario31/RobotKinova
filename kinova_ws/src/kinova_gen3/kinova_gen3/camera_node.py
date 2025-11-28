@@ -12,7 +12,7 @@ import os
 BLUE_SQUARE_XW = 0.075
 BLUE_SQUARE_YW = 0.265
 
-BLUE_SQUARE_WORLD = [[0.075, 0.265], [0.140, 0.440], [0.205, 0.335]]
+BLUE_SQUARE_WORLD = [[-0.205, 0.335], [0.075, 0.265], [0.140, 0.440]]
 
 CLIENT = InferenceHTTPClient(
     api_url="https://serverless.roboflow.com",
@@ -74,6 +74,9 @@ class CameraNode(Node):
 
         # Extract pixel coordinates from blue square predictions
         blue_square_pixels = [[pred['x'], pred['y']] for pred in blue_squares]
+
+        blue_square_pixels = sorted(blue_square_pixels, key=lambda point: point[0])
+
 
         # Compute 2D affine transform
         matrix = self.compute_affine_from_three_points(blue_square_pixels, BLUE_SQUARE_WORLD)
