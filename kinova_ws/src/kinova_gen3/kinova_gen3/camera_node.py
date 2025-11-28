@@ -10,8 +10,8 @@ import os
 
 # --- REAL-WORLD COORDINATES OF 3 BLUE SQUARES ---
 BLUE_WORLD_POINTS = {
-    "blue1": (0.075, 0.265),
     "blue2": (-0.210, 0.350),
+    "blue1": (0.075, 0.265),
     "blue3": (0.150, 0.440)
 }
 
@@ -48,14 +48,15 @@ class CameraNode(Node):
         calibration_pixels = []
         calibration_world = []
 
+        img = cv2.imread(self.image_path)
+
         for pred in preds:
-            cls = pred['class']
-            if cls in BLUE_WORLD_POINTS:
+            class_name = pred['class']
+            if class_name == "blue":
                 x_center = pred['x']
                 y_center = pred['y']
 
                 calibration_pixels.append([x_center, y_center])
-                calibration_world.append(list(BLUE_WORLD_POINTS[cls]))
 
         # Must find all three squares
         if len(calibration_pixels) != 3:
@@ -91,6 +92,9 @@ class CameraNode(Node):
         response.x_coords = x_coords
         response.y_coords = y_coords
         response.class_names = class_names
+
+        cv2.imwrite("output.jpg", img)
+
         return response
 
 def main(args=None):
