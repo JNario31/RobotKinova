@@ -12,6 +12,8 @@ import os
 BLUE_SQUARE_XW = 0.075
 BLUE_SQUARE_YW = 0.265
 
+BLUE_SQUARE_WORLD = [[0.075, 0.265], [0.140, 0.440], [0.205, 0.335]]
+
 CLIENT = InferenceHTTPClient(
     api_url="https://serverless.roboflow.com",
     api_key="dOXf27URLjdeZMgyJ7en"
@@ -29,7 +31,13 @@ class CameraNode(Node):
         # Store latest coordinates
         self.coords = []
         self.class_names = []
-        
+    
+    def compute_affine_from_three_points(self, pixel_pts, world_pts):
+        """Returns a 2x3 affine transform from 3 world→pixel correspondences."""
+        pixel_pts = np.float32(pixel_pts)
+        world_pts = np.float32(world_pts)
+        matrix = cv2.getAffineTransform(pixel_pts, world_pts)
+        return matrix
     
     def _handle_get_coords(self, request, response):
         """Process image and return detected coordinates"""
@@ -44,49 +52,37 @@ class CameraNode(Node):
 
         img = cv2.imread(self.image_path)
         
+        blue_squares = []
+
         # Find blue square for calibration
         blue_square_pred = None
         for pred in preds:
             if pred['class'] == "blue":
-                blue_square_pred = pred
-                break
+                blue_squares.append(pred)
+    
         
-        if blue_square_pred is None:
-            self.get_logger().error('Blue calibration square not found!')
+        if blue_squares.len() != 3:
+            self.get_logger().error('Blue calibration error!')
             response.x_coords = []
             response.y_coords = []
             response.class_names = []
             return response
         
-        # Get the four corners of the blue square bounding box
-        x_center = blue_square_pred['x']
-        y_center = blue_square_pred['y']
-        width = blue_square_pred['width']
-        height = blue_square_pred['height']
+        # Compute 2D affine transform
+        matrix = self.compute_affine_from_three_points(blue_squares, BLUE_SQUARE_WORLD)
+        self.get_logger().info(f"Affine transformation matrix (2x3):\n{matrix}")
         
-        # Calculate four corners in pixel coordinates (top-left, top-right, bottom-right, bottom-left)
-        pixel_points = [
-            [x_center - width/2, y_center - height/2],  # top-left
-            [x_center + width/2, y_center - height/2],  # top-right
-            [x_center + width/2, y_center + height/2],  # bottom-right
-            [x_center - width/2, y_center + height/2]   # bottom-left
-        ]
+        # Get the four corners of the blue square bounding box
+        for blues in blue_squares:
+            x_center = blue_square_pred['x']
+            y_center = blue_square_pred['y']
+            width = blue_square_pred['width']
+            height = blue_square_pred['height']
+            
         
         # Measure your actual blue square and put the dimensions here!
         BLUE_SQUARE_SIZE = 0.045  # TODO: MEASURE THIS IN METERS!
         
-        # Corresponding world coordinates (assuming square is axis-aligned)
-        world_points = [
-            [BLUE_SQUARE_XW - BLUE_SQUARE_SIZE/2, BLUE_SQUARE_YW - BLUE_SQUARE_SIZE/2],  # top-left
-            [BLUE_SQUARE_XW + BLUE_SQUARE_SIZE/2, BLUE_SQUARE_YW - BLUE_SQUARE_SIZE/2],  # top-right
-            [BLUE_SQUARE_XW + BLUE_SQUARE_SIZE/2, BLUE_SQUARE_YW + BLUE_SQUARE_SIZE/2],  # bottom-right
-            [BLUE_SQUARE_XW - BLUE_SQUARE_SIZE/2, BLUE_SQUARE_YW + BLUE_SQUARE_SIZE/2]   # bottom-left
-        ]
-        
-        # Compute transformation with 4 points
-        matrix = compute_transformation(pixel_points, world_points)
-        
-        self.get_logger().info(f'Transformation matrix computed:\n{matrix}')
         
         # Transform all detected objects
         x_coords = []
@@ -100,7 +96,10 @@ class CameraNode(Node):
             h = int(pred['height'])
             class_name = pred['class']
             conf = pred['confidence']
-            xw, yw = apply_transformation(matrix, (xp, yp))
+
+            # Apply affine transform manually (2x3 matrix)
+            xw = matrix[0,0]*xp + matrix[0,1]*yp + matrix[0,2]
+            yw = matrix[1,0]*xp + matrix[1,1]*yp + matrix[1,2]
             
             if(class_name != "blue" or class_name != "broken"):
                 x_coords.append(float(xw))
