@@ -12,7 +12,10 @@ import os
 BLUE_SQUARE_XW = 0.075
 BLUE_SQUARE_YW = 0.265
 
-BLUE_SQUARE_WORLD = [[-0.205, 0.335], [0.075, 0.265], [0.140, 0.440]]
+# BLUE_SQUARE_WORLD = [[-0.205, 0.335], [0.075, 0.265], [0.140, 0.440]]
+
+BLUE_SQUARE_WORLD = [[0.335, -0.205], [0.265, 0.075], [0.440, 0.140]]
+
 
 CLIENT = InferenceHTTPClient(
     api_url="https://serverless.roboflow.com",
