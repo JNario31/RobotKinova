@@ -61,7 +61,7 @@ class CameraNode(Node):
                 blue_squares.append(pred)
     
         
-        if blue_squares.len() != 3:
+        if len(blue_squares) != 3:
             self.get_logger().error('Blue calibration error!')
             response.x_coords = []
             response.y_coords = []
