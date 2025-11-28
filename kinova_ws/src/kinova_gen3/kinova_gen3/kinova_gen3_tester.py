@@ -261,17 +261,22 @@ def main():
                 n_blocks = len(color_coords)
             
                 # Calculate end position for this color
-                end_z = base_z
-                if (i < 5):
-                    end_x = base_x + (i * x_increment)
+                end_z = base_z # top right (from camera view)
+                if color == "red":
+                    end_x = base_x + 0.43
                     end_y = base_y
-                elif (i < 10): 
-                    end_x = base_x + (j * x_increment)
-                    end_y = -1 * base_y
-                    j = j - 1
+                elif color == "green": # bottom right 
+                    end_x = base_x + 0.43
+                    end_y = base_y + 0.62
+                elif color == "yellow": # bottom left
+                    end_x = base_x - 0.43
+                    end_y = base_y + 0.62
+                else: # top left
+                    end_x = base_x - 0.43
+                    end_y = base_y
 
                 print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f}) {color_coords}")
-            
+                print(f"classes{unique_classes}")
                 stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
             
 
