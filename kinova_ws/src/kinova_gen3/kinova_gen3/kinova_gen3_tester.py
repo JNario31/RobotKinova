@@ -262,17 +262,17 @@ def main():
             # Calculate end position for this color
             end_z = base_z # top right (from camera view)
             if color == "red":
-                end_x = 0.43
-                end_y = 0.0
+                end_x = 0.0
+                end_y = 0.43
             elif color == "green": # bottom right 
-                end_x = 0.43
-                end_y = 0.62
+                end_x = 0.62
+                end_y = 0.43
             elif color == "yellow": # bottom left
-                end_x = -0.43
-                end_y = 0.62
+                end_x = 0.63
+                end_y = -0.43
             else: # top left
-                end_x = -0.43
-                end_y = 0.0
+                end_x = 0.0
+                end_y = -0.43
 
             print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f}) {color_coords}")
             print(f"classes{unique_classes}")
