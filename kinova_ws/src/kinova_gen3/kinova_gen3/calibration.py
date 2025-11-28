@@ -4,7 +4,7 @@ import pickle
 
 # Chessboard dimensions (inner corners)
 CHESSBOARD_SIZE = (7, 7)  # Columns, Rows of INNER corners
-SQUARE_SIZE = 35  # Size of each square in mm (or whatever unit you want)
+SQUARE_SIZE = 40  # Size of each square in mm (or whatever unit you want)
 
 # Termination criteria for corner refinement
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)

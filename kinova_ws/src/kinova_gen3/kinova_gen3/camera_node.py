@@ -12,9 +12,9 @@ import os
 BLUE_SQUARE_XW = 0.075
 BLUE_SQUARE_YW = 0.265
 
-# BLUE_SQUARE_WORLD = [[-0.205, 0.335], [0.075, 0.265], [0.140, 0.440]]
+BLUE_SQUARE_WORLD = [[-0.205, 0.335], [0.075, 0.265], [0.140, 0.440]]
 
-BLUE_SQUARE_WORLD = [[0.335, -0.205], [0.265, 0.075], [0.440, 0.140]]
+#BLUE_SQUARE_WORLD = [[0.335, -0.205], [0.265, 0.075], [0.440, 0.140]]
 
 
 CLIENT = InferenceHTTPClient(
@@ -27,7 +27,7 @@ class CameraNode(Node):
         super().__init__('camera_node')
         self.get_logger().info('Camera node created')
 
-        self.image_path = "/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/original_image.jpg"
+        self.image_path = "/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/undistorted_image.jpg"
         # Create service that provides coordinates
         self.create_service(GetCoords, "get_coords", self._handle_get_coords)
         
