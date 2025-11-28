@@ -251,34 +251,33 @@ def main():
     base_z = 0.05  # Fixed z position
     x_increment = -0.10  # 5cm increment for each color (0.05m = 5cm)
     j = 5
-    while unique_classes:
-        for i, color in enumerate(unique_classes):
-            if color != "blue":
-                
-                picture_postion(node, set_tool)
-                # Filter coordinates for this specific color
-                color_coords = [coord for coord in coords if coord[2] == color]
-                n_blocks = len(color_coords)
+    for i, color in enumerate(unique_classes):
+        if color != "blue":
             
-                # Calculate end position for this color
-                end_z = base_z # top right (from camera view)
-                if color == "red":
-                    end_x = base_x + 0.43
-                    end_y = base_y
-                elif color == "green": # bottom right 
-                    end_x = base_x + 0.43
-                    end_y = base_y + 0.62
-                elif color == "yellow": # bottom left
-                    end_x = base_x - 0.43
-                    end_y = base_y + 0.62
-                else: # top left
-                    end_x = base_x - 0.43
-                    end_y = base_y
+            picture_postion(node, set_tool)
+            # Filter coordinates for this specific color
+            color_coords = [coord for coord in coords if coord[2] == color]
+            n_blocks = len(color_coords)
+        
+            # Calculate end position for this color
+            end_z = base_z # top right (from camera view)
+            if color == "red":
+                end_x = 0.43
+                end_y = 0.0
+            elif color == "green": # bottom right 
+                end_x = 0.43
+                end_y = 0.62
+            elif color == "yellow": # bottom left
+                end_x = -0.43
+                end_y = 0.62
+            else: # top left
+                end_x = -0.43
+                end_y = 0.0
 
-                print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f}) {color_coords}")
-                print(f"classes{unique_classes}")
-                stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
-            
+            print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f}) {color_coords}")
+            print(f"classes{unique_classes}")
+            stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
+        
 
 
 
