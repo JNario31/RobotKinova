@@ -71,9 +71,12 @@ class CameraNode(Node):
             response.y_coords = []
             response.class_names = []
             return response
-        
+
+        # Extract pixel coordinates from blue square predictions
+        blue_square_pixels = [[pred['x'], pred['y']] for pred in blue_squares]
+
         # Compute 2D affine transform
-        matrix = self.compute_affine_from_three_points(blue_squares, BLUE_SQUARE_WORLD)
+        matrix = self.compute_affine_from_three_points(blue_square_pixels, BLUE_SQUARE_WORLD)
         self.get_logger().info(f"Affine transformation matrix (2x3):\n{matrix}")
         
         # Get the four corners of the blue square bounding box
