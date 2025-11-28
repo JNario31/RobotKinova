@@ -4,119 +4,90 @@ import cv2
 import numpy as np
 from inference_sdk import InferenceHTTPClient
 from kinova_gen3_interfaces.srv import GetCoords
-import pickle
-import threading
+from kinova_gen3.matrix_utils import compute_transformation, apply_transformation
+import os
+
+
+# --- CONSTANTS --- 
+BLUE_SQUARE_XW = 0.075
+BLUE_SQUARE_YW = 0.265
+
+#BLUE_SQUARE_WORLD = [[-0.205, 0.335], [0.075, 0.265], [0.140, 0.440]]
+
+BLUE_SQUARE_WORLD = [[0.440, -0.140], [0.265, -0.075], [0.335, 0.205]]
+
 
 CLIENT = InferenceHTTPClient(
     api_url="https://serverless.roboflow.com",
     api_key="dOXf27URLjdeZMgyJ7en"
 )
 
-BLUE_SQUARE_WORLD = [[0.440, -0.140], [0.265, -0.075], [0.335, 0.205]]
-
 class CameraNode(Node):
     def __init__(self):
         super().__init__('camera_node')
         self.get_logger().info('Camera node created')
-        
-        # Load camera calibration
-        with open('/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/camera_calibration.pkl', 'rb') as f:
-            calib = pickle.load(f)
-        
-        self.camera_matrix = calib['camera_matrix']
-        self.dist_coeffs = calib['dist_coeffs']
-        
-        # Create service
+
+        self.image_path = "/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/undistorted_image.jpg"
+        # Create service that provides coordinates
         self.create_service(GetCoords, "get_coords", self._handle_get_coords)
         
-        # Open camera
-        self.cap = cv2.VideoCapture(4)
-        if not self.cap.isOpened():
-            self.get_logger().error("Failed to open camera!")
-            return
-        
-        # Current frame storage
-        self.current_frame = None
-        self.lock = threading.Lock()
-        
-        # Start camera thread
-        self.camera_thread = threading.Thread(target=self.run_camera, daemon=True)
-        self.camera_thread.start()
+        # Store latest coordinates
+        self.coords = []
+        self.class_names = []
     
     def compute_affine_from_three_points(self, pixel_pts, world_pts):
         """Returns a 2x3 affine transform from 3 world→pixel correspondences."""
+        if isinstance(pixel_pts, dict):
+            pixel_pts = list(pixel_pts.values())
+        if isinstance(world_pts, dict):
+            world_pts = list(world_pts.values())
         pixel_pts = np.float32(pixel_pts)
         world_pts = np.float32(world_pts)
         matrix = cv2.getAffineTransform(pixel_pts, world_pts)
         return matrix
     
-    def run_camera(self):
-        """Continuously capture and display camera feed"""
-        while rclpy.ok():
-            ret, frame = self.cap.read()
-            if not ret:
-                continue
-            
-            # Undistort frame
-            h, w = frame.shape[:2]
-            new_camera_matrix, roi = cv2.getOptimalNewCameraMatrix(
-                self.camera_matrix, self.dist_coeffs, (w, h), 1, (w, h)
-            )
-            undistorted = cv2.undistort(frame, self.camera_matrix, self.dist_coeffs, 
-                                       None, new_camera_matrix)
-            
-            # Update current frame
-            with self.lock:
-                self.current_frame = undistorted.copy()
-            
-            # Display
-            cv2.imshow('Live Camera Feed', undistorted)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-        
-        self.cap.release()
-        cv2.destroyAllWindows()
-    
     def _handle_get_coords(self, request, response):
-        """Process current frame and return detected coordinates"""
-        self.get_logger().info('Processing frame for coordinates...')
-        
-        # Get current frame
-        with self.lock:
-            if self.current_frame is None:
-                self.get_logger().error("No frame available!")
-                response.x_coords = []
-                response.y_coords = []
-                response.class_names = []
-                return response
-            
-            img = self.current_frame.copy()
-        
-        # Save for inference
-        temp_path = "/tmp/inference_frame.jpg"
-        cv2.imwrite(temp_path, img)
+        """Process image and return detected coordinates"""
+        self.get_logger().info('Processing image for coordinates...')
         
         # Run inference
-        result = CLIENT.infer(temp_path, model_id="cube-color-gzmh4/14")
+        result = CLIENT.infer(self.image_path, model_id="cube-color-gzmh4/14")
         preds = result['predictions']
         self.get_logger().info(f'Found {len(preds)} predictions')
+        for i, pred in enumerate(preds):
+            self.get_logger().info(f"Prediction {i}: {pred}")
+
+        img = cv2.imread(self.image_path)
         
-        # Find blue squares
-        blue_squares = [pred for pred in preds if pred['class'] == "blue"]
+        blue_squares = []
+
+        # Find blue square for calibration
+        blue_square_pred = None
+        for pred in preds:
+            if pred['class'] == "blue":
+                blue_squares.append(pred)
+    
         
         if len(blue_squares) != 3:
-            self.get_logger().error(f'Blue calibration error! Found {len(blue_squares)}/3')
+            self.get_logger().error('Blue calibration error!')
             response.x_coords = []
             response.y_coords = []
             response.class_names = []
             return response
-        
-        # Extract and sort blue square pixels
+
+        # Extract pixel coordinates from blue square predictions
         blue_square_pixels = [[pred['x'], pred['y']] for pred in blue_squares]
+
         blue_square_pixels = sorted(blue_square_pixels, key=lambda point: point[0])
-        
-        # Compute transformation
+
+
+        # Compute 2D affine transform
         matrix = self.compute_affine_from_three_points(blue_square_pixels, BLUE_SQUARE_WORLD)
+        self.get_logger().info(f"Affine transformation matrix (2x3):\n{matrix}") 
+        
+        # Measure your actual blue square and put the dimensions here!
+        BLUE_SQUARE_SIZE = 0.045  # TODO: MEASURE THIS IN METERS!
+        
         
         # Transform all detected objects
         x_coords = []
@@ -124,32 +95,50 @@ class CameraNode(Node):
         class_names = []
         
         for pred in preds:
-            xp = pred['x']
-            yp = pred['y']
+            xp = int(pred['x'])
+            yp = int(pred['y'])
+            w = int(pred['width'])
+            h = int(pred['height'])
             class_name = pred['class']
-            
-            # Apply affine transform
+            conf = pred['confidence']
+
+            # Apply affine transform manually (2x3 matrix)
             xw = matrix[0,0]*xp + matrix[0,1]*yp + matrix[0,2]
             yw = matrix[1,0]*xp + matrix[1,1]*yp + matrix[1,2]
             
-            if class_name not in ["blue", "broken"]:
+            if(class_name != "blue" or class_name != "broken"):
                 x_coords.append(float(xw))
                 y_coords.append(float(yw))
-                class_names.append(class_name)
-                self.get_logger().info(f"{class_name}: ({xw:.4f}, {yw:.4f})")
+                class_names.append(pred['class'])
+                
+                self.get_logger().info(f"{pred['class']}: ({xw:.4f}, {yw:.4f})")
+                
+                x1 = int(xp - w/2)
+                y1 = int(yp - h/2)
+                x2 = int(xp + w/2)
+                y2 = int(yp + h/2)
+
+                # Draw bounding box
+                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+
+                # Draw label
+                label = f"{class_name} ({conf:.2f})"
+                cv2.putText(img, label, (x1, y1-10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,255,0), 2)
         
         response.x_coords = x_coords
         response.y_coords = y_coords
         response.class_names = class_names
-        
+
+        cv2.imwrite("output.jpg",img)
+
+
         return response
 
 def main(args=None):
     rclpy.init(args=args)
     node = CameraNode()
     rclpy.spin(node)
-    node.cap.release()
-    cv2.destroyAllWindows()
     rclpy.shutdown()
 
 if __name__ == '__main__':
