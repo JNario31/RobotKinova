@@ -183,38 +183,46 @@ def place_block(node, set_tool, set_gripper, x, y, z, approach_height=15.0):
     time.sleep(1.5)
 
     return True
+
 def stack_blocks(node, set_tool, home, set_gripper, coords, n_blocks, x, y, z):
-    # Pickup location configuration
-    pickup_z = 0.0
-    n = n_blocks
 
-    # Block height
-    block_height = 0.05
+        # Pickup location configuration
+        pickup_z = 0.0
+        n = n_blocks
 
-    # Place configuration
-    place_x = x
-    place_y = y
-    place_z = z
+        # Block height
+        block_height = 0.05
 
-    # Approach height
-    approach_height = 0.15
+        # Place configuration
+        place_x = x
+        place_y = y
+        place_z = z
 
-    for i in range(n):
-        # coords are (x_world, y_world, class_name)
-        block_x = coords[i][0]
-        block_y = coords[i][1]
-        
-        print(f"Picking block {i+1}/{n} at ({block_x:.3f}, {block_y:.3f})")
+        #Approach height
+        approach_height = 0.15
+
+        for i in range(n):
+            x = coords[i][0]
+            y = coords[i][1]
+
+            # if y > 0.2:
+            #     y = y - 0.2
+            # elif y > 0 and y <= 0.2:
+            #     y = y - 0.1
+            # elif y < 0 and y >= -0.2:
+            #     y = y + 0.1
+            # elif y < -0.2:
+            #     y = y + 0.2
                 
-        # NO COORDINATE SWAP - use x and y directly as returned from camera
-        pick_block(node, set_tool, set_gripper, 
-                block_x, block_y, pickup_z, 
-                approach_height=approach_height)
+            pick_block(node, set_tool, set_gripper, 
+                    y, x - 0.15, pickup_z, 
+                    approach_height=approach_height)
+            place_block(node, set_tool, set_gripper, 
+                    place_x, place_y, place_z + i * block_height, 
+                    approach_height=approach_height)
+            time.sleep(1.5)
         
-        place_block(node, set_tool, set_gripper, 
-                place_x, place_y, place_z + i * block_height, 
-                approach_height=approach_height)
-        time.sleep(1.5)
+
 
 def main():
     rclpy.init(args=None)
