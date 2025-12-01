@@ -109,7 +109,6 @@ def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
 def picture_postion(node, set_tool):
     do_set_tool(node, set_tool,0.1, 0.3, 0.4, 180.0,0.0,180.0)
     take_picture()
-    time.sleep(1.5)
 
 def take_picture():
     with open('/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/camera_calibration.pkl', 'rb') as f:
@@ -239,9 +238,7 @@ def main():
     while not home.wait_for_service(timeout_sec=1.0):
         node.get_logger().info('Waiting for home')
 
-    time.sleep(1.5)
     picture_postion(node, set_tool)
-    time.sleep(1.5)
     coords = do_get_coords(node, get_coords)
 
     class_names = [coord[2] for coord in coords]
@@ -279,9 +276,8 @@ def main():
                 print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f}) {color_coords}")
                 print(f"classes{unique_classes}")
                 stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
-        time.sleep(1.5)
+
         picture_postion(node, set_tool)
-        time.sleep(1.5)
         coords = do_get_coords(node, get_coords)
 
         class_names = [coord[2] for coord in coords]
