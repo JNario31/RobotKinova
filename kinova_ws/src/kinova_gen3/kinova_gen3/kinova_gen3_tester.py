@@ -267,11 +267,8 @@ def main():
                     end_x = 0.0
                     end_y = 0.21
                 elif color == "yellow": # bottom left
-                    end_x = 0.60
+                    end_x = 0.0
                     end_y = -0.43
-                # else: # top left
-                #     end_x = 0.0
-                #     end_y = -0.43
 
                 print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f}) {color_coords}")
                 print(f"classes{unique_classes}")
