@@ -5,67 +5,6 @@ import time
 import pickle
 import cv2
 
-import threading
-
-class CameraDisplay:
-    def __init__(self, camera_id=5, calib_path='/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/camera_calibration.pkl'):
-        self.camera_id = camera_id
-        self.running = False
-        self.thread = None
-        
-        # Load calibration
-        with open(calib_path, 'rb') as f:
-            calib = pickle.load(f)
-        self.camera_matrix = calib['camera_matrix']
-        self.dist_coeffs = calib['dist_coeffs']
-    
-    def start(self):
-        """Start the camera display thread"""
-        if self.running:
-            return
-        
-        self.running = True
-        self.thread = threading.Thread(target=self._display_loop)
-        self.thread.daemon = True
-        self.thread.start()
-    
-    def stop(self):
-        """Stop the camera display"""
-        self.running = False
-        if self.thread:
-            self.thread.join()
-        cv2.destroyAllWindows()
-    
-    def _display_loop(self):
-        """Internal loop for displaying camera feed"""
-        cap = cv2.VideoCapture(self.camera_id)
-        
-        if not cap.isOpened():
-            print("Failed to open camera")
-            return
-        
-        while self.running:
-            ret, frame = cap.read()
-            if not ret:
-                continue
-            
-            h, w = frame.shape[:2]
-            new_camera_matrix, roi = cv2.getOptimalNewCameraMatrix(
-                self.camera_matrix, self.dist_coeffs, (w, h), 1, (w, h)
-            )
-            
-            undistorted = cv2.undistort(frame, self.camera_matrix, 
-                                       self.dist_coeffs, None, new_camera_matrix)
-            
-            cv2.imshow('Live Camera Feed', undistorted)
-            
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                self.running = False
-                break
-        
-        cap.release()
-        cv2.destroyAllWindows()
-
 def do_home(node, home):
     z = Status.Request()
     future = home.call_async(z)
@@ -268,9 +207,6 @@ def main():
     rclpy.init(args=None)
     node = Node('dummy')
 
-    camera_display = CameraDisplay()
-    camera_display.start()
-
     get_coords = node.create_client(GetCoords, "/get_coords")
     while not get_coords.wait_for_service(timeout_sec=1.0):
         node.get_logger().info('Waiting for get_coords')
@@ -303,11 +239,9 @@ def main():
     while not home.wait_for_service(timeout_sec=1.0):
         node.get_logger().info('Waiting for home')
 
-    camera_display.stop()
     time.sleep(1.5)
     picture_postion(node, set_tool)
     time.sleep(1.5)
-    camera_display.start()
     coords = do_get_coords(node, get_coords)
 
     class_names = [coord[2] for coord in coords]
@@ -345,11 +279,9 @@ def main():
                 print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f}) {color_coords}")
                 print(f"classes{unique_classes}")
                 stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
-        camera_display.stop()
         time.sleep(1.5)
         picture_postion(node, set_tool)
         time.sleep(1.5)
-        camera_display.start()
         coords = do_get_coords(node, get_coords)
 
         class_names = [coord[2] for coord in coords]
