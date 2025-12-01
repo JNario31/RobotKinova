@@ -4,6 +4,68 @@ from rclpy.node import Node
 import time
 import pickle
 import cv2
+import threading
+
+import threading
+
+class CameraDisplay:
+    def __init__(self, camera_id=4, calib_path='/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/camera_calibration.pkl'):
+        self.camera_id = camera_id
+        self.running = False
+        self.thread = None
+        
+        # Load calibration
+        with open(calib_path, 'rb') as f:
+            calib = pickle.load(f)
+        self.camera_matrix = calib['camera_matrix']
+        self.dist_coeffs = calib['dist_coeffs']
+    
+    def start(self):
+        """Start the camera display thread"""
+        if self.running:
+            return
+        
+        self.running = True
+        self.thread = threading.Thread(target=self._display_loop)
+        self.thread.daemon = True
+        self.thread.start()
+    
+    def stop(self):
+        """Stop the camera display"""
+        self.running = False
+        if self.thread:
+            self.thread.join()
+        cv2.destroyAllWindows()
+    
+    def _display_loop(self):
+        """Internal loop for displaying camera feed"""
+        cap = cv2.VideoCapture(self.camera_id)
+        
+        if not cap.isOpened():
+            print("Failed to open camera")
+            return
+        
+        while self.running:
+            ret, frame = cap.read()
+            if not ret:
+                continue
+            
+            h, w = frame.shape[:2]
+            new_camera_matrix, roi = cv2.getOptimalNewCameraMatrix(
+                self.camera_matrix, self.dist_coeffs, (w, h), 1, (w, h)
+            )
+            
+            undistorted = cv2.undistort(frame, self.camera_matrix, 
+                                       self.dist_coeffs, None, new_camera_matrix)
+            
+            cv2.imshow('Live Camera Feed', undistorted)
+            
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                self.running = False
+                break
+        
+        cap.release()
+        cv2.destroyAllWindows()
 
 
 def do_home(node, home):
@@ -113,6 +175,7 @@ def picture_postion(node, set_tool):
     time.sleep(1.5)
 
 def take_picture():
+    max_retries = 5
     with open('/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/camera_calibration.pkl', 'rb') as f:
         calib = pickle.load(f)
 
@@ -121,24 +184,30 @@ def take_picture():
 
     cap = cv2.VideoCapture(4)
 
-    ret, frame = cap.read()
-    if not ret:
-        cap.release()
-        raise RuntimeError("Failed to capture image from Camera.")
-    
-    h, w = frame.shape[:2]
-
-    new_camera_matrix, roi = cv2.getOptimalNewCameraMatrix(
-        camera_matrix, dist_coeffs, (w, h), 1, (w, h)
-    )
+    for attempt in range(max_retries):
+        ret, frame = cap.read()
         
-    # Undistort
-    undistorted = cv2.undistort(frame, camera_matrix, dist_coeffs, 
-                                None, new_camera_matrix)    
-    
-    cv2.imwrite('/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/undistorted_image.jpg', undistorted)
-    cv2.imwrite('/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/original_image.jpg', frame)
+        if ret and frame is not None:
+            # Successfully captured frame
+            h, w = frame.shape[:2]
 
+            new_camera_matrix, roi = cv2.getOptimalNewCameraMatrix(
+                camera_matrix, dist_coeffs, (w, h), 1, (w, h)
+            )
+                
+            # Undistort
+            undistorted = cv2.undistort(frame, camera_matrix, dist_coeffs, 
+                                        None, new_camera_matrix)    
+            
+            cv2.imwrite('/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/undistorted_image.jpg', undistorted)
+            cv2.imwrite('/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/original_image.jpg', frame)
+
+            cap.release()
+            print("Saved undistorted_image.jpg and original_image.jpg")
+            return True
+        else:
+            # Failed to capture
+            print(f"Failed to capture image (attempt {attempt + 1}/{max_retries}). Retrying...")
     cap.release()
     print("Saved undistorted_image.jpg and original_image.jpg")
     
@@ -206,6 +275,9 @@ def main():
     rclpy.init(args=None)
     node = Node('dummy')
 
+    camera_display = CameraDisplay()
+    camera_display.start()
+
     get_coords = node.create_client(GetCoords, "/get_coords")
     while not get_coords.wait_for_service(timeout_sec=1.0):
         node.get_logger().info('Waiting for get_coords')
@@ -238,44 +310,7 @@ def main():
     while not home.wait_for_service(timeout_sec=1.0):
         node.get_logger().info('Waiting for home')
 
-    picture_postion(node, set_tool)
-    coords = do_get_coords(node, get_coords)
-
-    class_names = [coord[2] for coord in coords]
-    unique_classes = set(class_names)
-    
-    valid_coords = []
-    for coord in coords:
-        if coord[2] != "blue" and coord[2] != "broken":
-            valid_coords.append(coord)
-   # Define base end coordinates
-    base_z = 0.05  # Fixed z position
-    n = len(valid_coords)
-    while n > 0:
-        for i, color in enumerate(unique_classes):
-            if color != "blue":
-                # Filter coordinates for this specific color
-                color_coords = [coord for coord in coords if coord[2] == color]
-                n_blocks = len(color_coords)
-            
-                # Calculate end position for this color
-                end_z = base_z # top right (from camera view)
-                if color == "red":
-                    end_x = 0.0
-                    end_y = 0.43
-                elif color == "green": # bottom right 
-                    end_x = 0.60
-                    end_y = 0.43
-                elif color == "yellow": # bottom left
-                    end_x = 0.60
-                    end_y = -0.43
-                else: # top left
-                    end_x = 0.0
-                    end_y = -0.43
-
-                print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f}) {color_coords}")
-                print(f"classes{unique_classes}")
-                stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
+    try:
         picture_postion(node, set_tool)
         coords = do_get_coords(node, get_coords)
 
@@ -286,7 +321,47 @@ def main():
         for coord in coords:
             if coord[2] != "blue" and coord[2] != "broken":
                 valid_coords.append(coord)
+
+        base_z = 0.05  # Fixed z position
         n = len(valid_coords)
+        while n > 0:
+            for i, color in enumerate(unique_classes):
+                if color != "blue":
+                    # Filter coordinates for this specific color
+                    color_coords = [coord for coord in coords if coord[2] == color]
+                    n_blocks = len(color_coords)
+                
+                    # Calculate end position for this color
+                    end_z = base_z # top right (from camera view)
+                    if color == "red":
+                        end_x = 0.0
+                        end_y = 0.43
+                    elif color == "green": # bottom right 
+                        end_x = 0.60
+                        end_y = 0.43
+                    elif color == "yellow": # bottom left
+                        end_x = 0.60
+                        end_y = -0.43
+                    else: # top left
+                        end_x = 0.0
+                        end_y = -0.43
+
+                    print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f}) {color_coords}")
+                    print(f"classes{unique_classes}")
+                    stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
+            picture_postion(node, set_tool)
+            coords = do_get_coords(node, get_coords)
+
+            class_names = [coord[2] for coord in coords]
+            unique_classes = set(class_names)
+            
+            valid_coords = []
+            for coord in coords:
+                if coord[2] != "blue" and coord[2] != "broken":
+                    valid_coords.append(coord)
+            n = len(valid_coords)
+    finally:
+        camera_display.stop()
 
 
 
