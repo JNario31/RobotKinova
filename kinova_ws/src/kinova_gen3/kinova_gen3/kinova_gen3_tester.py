@@ -113,7 +113,6 @@ def picture_postion(node, set_tool):
     time.sleep(1.5)
 
 def take_picture():
-    max_retries = 5
     with open('/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/camera_calibration.pkl', 'rb') as f:
         calib = pickle.load(f)
 
@@ -122,30 +121,26 @@ def take_picture():
 
     cap = cv2.VideoCapture(4)
 
-    for attempt in range(max_retries):
-        ret, frame = cap.read()
+    ret, frame = cap.read()
         
-        if ret and frame is not None:
-            # Successfully captured frame
-            h, w = frame.shape[:2]
+    if ret and frame is not None:
+        # Successfully captured frame
+        h, w = frame.shape[:2]
 
-            new_camera_matrix, roi = cv2.getOptimalNewCameraMatrix(
-                camera_matrix, dist_coeffs, (w, h), 1, (w, h)
-            )
-                
-            # Undistort
-            undistorted = cv2.undistort(frame, camera_matrix, dist_coeffs, 
-                                        None, new_camera_matrix)    
+        new_camera_matrix, roi = cv2.getOptimalNewCameraMatrix(
+            camera_matrix, dist_coeffs, (w, h), 1, (w, h)
+        )
             
-            cv2.imwrite('/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/undistorted_image.jpg', undistorted)
-            cv2.imwrite('/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/original_image.jpg', frame)
+        # Undistort
+        undistorted = cv2.undistort(frame, camera_matrix, dist_coeffs, 
+                                    None, new_camera_matrix)    
+        
+        cv2.imwrite('/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/undistorted_image.jpg', undistorted)
+        cv2.imwrite('/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/original_image.jpg', frame)
 
-            cap.release()
-            print("Saved undistorted_image.jpg and original_image.jpg")
-            return True
-        else:
-            # Failed to capture
-            print(f"Failed to capture image (attempt {attempt + 1}/{max_retries}). Retrying...")
+        cap.release()
+        print("Saved undistorted_image.jpg and original_image.jpg")
+        return True
     cap.release()
     print("Saved undistorted_image.jpg and original_image.jpg")
     
