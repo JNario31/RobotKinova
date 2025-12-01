@@ -169,10 +169,12 @@ def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
 
     return True
 
-def picture_postion(node, set_tool):
+def picture_postion(node, set_tool, camera_display):
     do_set_tool(node, set_tool,0.1, 0.3, 0.4, 180.0,0.0,180.0)
+    camera_display.stop()
     take_picture()
     time.sleep(1.5)
+    camera_display.start()
 
 def take_picture():
     max_retries = 5
@@ -311,7 +313,7 @@ def main():
         node.get_logger().info('Waiting for home')
 
     try:
-        picture_postion(node, set_tool)
+        picture_postion(node, set_tool, camera_display)
         coords = do_get_coords(node, get_coords)
 
         class_names = [coord[2] for coord in coords]
@@ -342,14 +344,14 @@ def main():
                     elif color == "yellow": # bottom left
                         end_x = 0.60
                         end_y = -0.43
-                    else: # top left
-                        end_x = 0.0
-                        end_y = -0.43
+                    # else: # top left
+                    #     end_x = 0.0
+                    #     end_y = -0.43
 
                     print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f}) {color_coords}")
                     print(f"classes{unique_classes}")
                     stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
-            picture_postion(node, set_tool)
+            picture_postion(node, set_tool, camera_display)
             coords = do_get_coords(node, get_coords)
 
             class_names = [coord[2] for coord in coords]
