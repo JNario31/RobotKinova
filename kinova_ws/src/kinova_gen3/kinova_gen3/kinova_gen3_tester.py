@@ -305,7 +305,6 @@ def main():
 
     camera_display.stop()
     picture_postion(node, set_tool)
-    time.sleep(1.0)
     camera_display.start()
     coords = do_get_coords(node, get_coords)
 
