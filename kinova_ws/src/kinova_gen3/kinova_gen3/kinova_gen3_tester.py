@@ -8,7 +8,7 @@ import cv2
 import threading
 
 class CameraDisplay:
-    def __init__(self, camera_id=4, calib_path='/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/camera_calibration.pkl'):
+    def __init__(self, camera_id=5, calib_path='/home/bruno325/RobotKinova/kinova_ws/src/kinova_gen3/kinova_gen3/camera_calibration.pkl'):
         self.camera_id = camera_id
         self.running = False
         self.thread = None
