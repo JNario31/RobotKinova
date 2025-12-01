@@ -304,7 +304,9 @@ def main():
         node.get_logger().info('Waiting for home')
 
     camera_display.stop()
+    time.sleep(1.0)
     picture_postion(node, set_tool)
+    time.sleep(1.0)
     camera_display.start()
     coords = do_get_coords(node, get_coords)
 
@@ -344,7 +346,9 @@ def main():
                 print(f"classes{unique_classes}")
                 stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
         camera_display.stop()
+        time.sleep(1.0)
         picture_postion(node, set_tool)
+        time.sleep(1.0)
         camera_display.start()
         coords = do_get_coords(node, get_coords)
 
