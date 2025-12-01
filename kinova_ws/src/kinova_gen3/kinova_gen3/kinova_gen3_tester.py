@@ -107,7 +107,7 @@ def pick_block(node, set_tool, set_gripper, x, y, z, approach_height):
 
     return True
 
-def picture_postion(node, set_tool, camera_display):
+def picture_postion(node, set_tool):
     do_set_tool(node, set_tool,0.1, 0.3, 0.4, 180.0,0.0,180.0)
     take_picture()
     time.sleep(1.5)
@@ -213,9 +213,6 @@ def main():
     rclpy.init(args=None)
     node = Node('dummy')
 
-    camera_display = CameraDisplay()
-    camera_display.start()
-
     get_coords = node.create_client(GetCoords, "/get_coords")
     while not get_coords.wait_for_service(timeout_sec=1.0):
         node.get_logger().info('Waiting for get_coords')
@@ -249,7 +246,7 @@ def main():
         node.get_logger().info('Waiting for home')
 
     
-    picture_postion(node, set_tool, camera_display)
+    picture_postion(node, set_tool)
     coords = do_get_coords(node, get_coords)
 
     class_names = [coord[2] for coord in coords]
@@ -287,7 +284,7 @@ def main():
                 print(f"Stacking color {len(color_coords)} {color} block(s) at ({end_x:.3f}, {end_y:.3f}, {end_z:.3f}) {color_coords}")
                 print(f"classes{unique_classes}")
                 stack_blocks(node, set_tool, home, set_gripper, color_coords, n_blocks, end_x, end_y, end_z)
-        picture_postion(node, set_tool, camera_display)
+        picture_postion(node, set_tool)
         coords = do_get_coords(node, get_coords)
 
         class_names = [coord[2] for coord in coords]
