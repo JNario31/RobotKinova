@@ -117,7 +117,7 @@ def take_picture():
     camera_matrix = calib['camera_matrix']
     dist_coeffs = calib['dist_coeffs']
 
-    cap = cv2.VideoCapture(5)
+    cap = cv2.VideoCapture(4)
 
     ret, frame = cap.read()
         
